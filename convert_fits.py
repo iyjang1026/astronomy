@@ -33,14 +33,18 @@ class convert_fits:
             b.append(column_b)
 
         img = np.array([r, g, b])
-        root, file = os.path.splitext(path)
-        fits.writeto(root+'_debayered'+file, img, hdr, overwrite=True)
+        return img, hdr
+        
         #print(img.shape)
 
     def debayer_RGGB_multi(path): #debayer multiple images in directory of path
-        file = convert_fits(path).path
-        for i in file:
-            convert_fits.debayer_RGGB_single(i)
+        files = convert_fits(path).path
+        os.mkdir(files + '/color')
+        for i in files:
+            img, hdr= convert_fits.debayer_RGGB_single(i)
+            root, file = os.path.split(i)
+            fits.writeto(root+'/color/debayered_'+file, img, hdr, overwrite=True)
+
 
     def split_rgb_single(path, obj_name): #split rgb single image
         
