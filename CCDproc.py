@@ -79,10 +79,10 @@ class Ccdprc:
         segment_map = finder(convolved_data, threshold)
 
         mask_map = np.array(segment_map)
-
-        masked = np.where((mask_map!=0), np.nan, sub_d)
-        final = np.where((masked==np.nan), np.median(np.isnan(masked)), masked)
-        return final, hdr
+        smoothed = convolve(mask_map, kernel)
+        masked = np.where((smoothed!=0), np.nan, sub_d)
+        #final = np.where((masked==np.nan), np.median(np.isnan(masked)), masked)
+        return masked, hdr
     
     def combine_dark_sky_flat(path):
         import glob
