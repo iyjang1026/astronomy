@@ -7,7 +7,7 @@ pip install <package name>
 
 numpy, glob, os, astropy, photutils, ccdproc
 
-#astromatic
+# astromatic
 
 astromatic's softwares is very useful. these software need shell baed command like bash(linux), zsh(mac)
 
