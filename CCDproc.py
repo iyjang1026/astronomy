@@ -79,8 +79,7 @@ class Ccdprc:
         segment_map = finder(convolved_data, threshold)
 
         mask_map = np.array(segment_map)
-        smoothed = convolve(mask_map, kernel)
-        masked = np.where((smoothed!=0), np.nan, sub_d)
+        masked = np.where((mask_map!=0), np.median(sub_d), sub_d)
         #final = np.where((masked==np.nan), np.median(np.isnan(masked)), masked)
         return masked, hdr
     
