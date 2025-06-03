@@ -1,8 +1,8 @@
-from astropy.nddata import CCDData, fits_ccddata_reader
+from astropy.nddata import CCDData
 import astropy.units as u
-from astropy.stats import mad_std
+from astropy.stats import mad_std, sigma_clipped_stats
 import astropy.io.fits as fits
-from ccdproc import combine, subtract_bias, subtract_dark, flat_correct, ccd_process
+from ccdproc import combine, subtract_bias, subtract_dark, flat_correct
 import numpy as np
 import glob
 import os
@@ -13,7 +13,7 @@ class Ccdprc:
         self.file = glob.glob(path) #import file directly. it must have full name and path of file
 
     def combine_bias(path):
-        file = glob.glob(path + '/biases/*.fit')
+        file = glob.glob(path + '/BIAS/*.fits')
         biases = []
         for i in file:
             img_data = CCDData.read(i, unit=u.adu)
@@ -25,12 +25,12 @@ class Ccdprc:
                              sigma_clip_func=np.ma.median, sigma_clip_dev_func=mad_std, 
                             )
         combined_bias.meta['combined'] = True
-        combined_bias.write(path + '/biases/combined_bias.fits')
+        combined_bias.write(path + '/BIAS/combined_bias.fits')
         
 
     def combine_dark(path):
-        file = glob.glob(path + '/darks/*.fit')
-        bias_img = CCDData(fits.open(path + '/biases/' + 'combined_bias.fits')[0].data, unit=u.adu)
+        file = glob.glob(path + '/DARK/*.fits')
+        bias_img = CCDData(fits.open(path + '/BIAS/' + 'combined_bias.fits')[0].data, unit=u.adu)
         dark_image = []
         for i in file:
             img_data = CCDData.read(i, unit=u.adu)
@@ -43,89 +43,113 @@ class Ccdprc:
                                  sigma_clip_func=np.ma.median, sigma_clip_dev_func=mad_std,
                                 )
         combined_dark.meta['combined'] = True
-        combined_dark.write(path +'/darks/combined_dark.fits')
+        combined_dark.write(path +'/DARK/combined_dark.fits')
 
     def DB_sub(path, obj_name):
-        file = glob.glob(path + '/lights/*'+obj_name+'*.fit')
-        bias_img = CCDData.read(path+'/biases/combined_bias.fits', unit=u.adu)
-        dark_img = CCDData.read(path+'/darks/combined_dark.fits', unit=u.adu)
-        os.mkdir(path+'/lights/DB_subed')
+        file = glob.glob(path + '/LIGHT/*.fits')
+        bias_img = CCDData.read(path+'/BIAS/combined_bias.fits', unit=u.adu)
+        dark_img = CCDData.read(path+'/DARK/combined_dark.fits', unit=u.adu)
+        os.mkdir(path+'/LIGHT/DB_subed')
         for i in file:
             data = CCDData.read(i, unit=u.adu)
             sub_b = subtract_bias(data, bias_img)
             sub_d = subtract_dark(sub_b, dark_img, exposure_time='exposure', exposure_unit=u.second)
             n = format(file.index(i), '04')
-            sub_d.write(path +'/lights/DB_subed/p'+ obj_name + '_'+str(n)+'_'+'.fits')
+            sub_d.write(path +'/LIGHT/DB_subed/p'+ obj_name + '_'+str(n)+'_'+'.fits')
 
     def masking_single(path):
         from photutils.background import Background2D, MedianBackground
-        from photutils.segmentation import SourceFinder
         from astropy.convolution import convolve
-        from photutils.segmentation import make_2dgaussian_kernel
-
+        from photutils.segmentation import make_2dgaussian_kernel, detect_sources
+        from astropy.stats import SigmaClip
         sub_d = fits.open(path)[0].data
         hdr = fits.open(path)[0].header
-
-        bkg_estimator = MedianBackground()
+        sigma_clip = SigmaClip(sigma=3.0)
+        bkg_estimator = MedianBackground(sigma_clip)
         bkg = Background2D(sub_d, (64,64), filter_size=(3,3), bkg_estimator=bkg_estimator)
         sub_d1 = sub_d - bkg.background
 
-        threshold = 3 * bkg.background_rms
-
-        kernel = make_2dgaussian_kernel(1.6, size=33)
+        threshold = 3*bkg.background_rms
+        
+        import skimage
+        from scipy.ndimage import binary_dilation
+        kernel = skimage.morphology.disk(3)
+        #kernel = make_2dgaussian_kernel(3.0, size=3)
         convolved_data = convolve(sub_d1, kernel)
 
-        finder = SourceFinder(npixels=10, progress_bar=False)
-        segment_map = finder(convolved_data, threshold)
-
+        segment_map = detect_sources(convolved_data, threshold, npixels=6)
         mask_map = np.array(segment_map)
-        masked = np.where((mask_map!=0), np.median(sub_d), sub_d)
-        #final = np.where((masked==np.nan), np.median(np.isnan(masked)), masked)
+        mask_map = binary_dilation(mask_map, kernel, iterations=2)
+        masked = np.where((mask_map!=0), np.nan, sub_d)
         return masked, hdr
     
     def combine_dark_sky_flat(path):
         import glob
-        file = glob.glob(path + '/lights/DB_subed/p*.fits')
+        file = glob.glob(path + '/N*.fits')
         flat = []
         for i in range(len(file)):
             hdu,hdr = Ccdprc.masking_single(file[i])
             data = CCDData(hdu, unit=u.adu, header=hdr)
             flat.append(data)
-            print(f'appended {i}')
-        combined_flat = combine(img_list=flat, method='median', sigma_clip=True, 
-                                sigma_clip_high_thresh=3, sigma_clip_low_thresh=6, 
-                                sigma_clip_dev_func=mad_std, sigma_clip_func=np.ma.median)
+            print(f'appended {i+1}')
+
+        #"""
+        combined_flat = combine(img_list=flat, method='median', sigma_clip=True, sigma_clip_dev_func=mad_std, sigma_clip_func=np.median,
+                                sigma_clip_high_thresh=3, sigma_clip_low_thresh=6)
+        #"""
+        #combined_flat = CCDData(np.ma.median(np.array(flat), axis=0), unit=u.adu)
         combined_flat.meta['combined'] = True
         combined_flat.meta['IMAGETYP'] = 'FLAT'
-        combined_flat.write(path + '/lights/fd.fits')
+        combined_flat.write(path + '/fd.fits')
         print(f'dark sky flat is made')
+        
     
     def flat_correct(path, obj_name):
-        file = glob.glob(path+'/lights/DB_subed/p*.fits')
-        flat = CCDData.read(path+'/lights/fd.fits', unit=u.adu)
-        os.mkdir(path+'/preprocessed')
+        file = glob.glob(path+'/LIGHT/DB_subed/r/N*.fits')
+        flat = CCDData.read(path+'/LIGHT/DB_subed/r/fd.fits', unit=u.adu)
+        os.mkdir(path+'/preprocessed_r1')
+        from astropy.stats import sigma_clipped_stats, mad_std
         for i in range(len(file)):
             data = CCDData.read(file[i], unit=u.adu)
             n = format(i, '04')
-            preprocessed = flat_correct(data, flat)
+            mean, median, std = sigma_clipped_stats(data, cenfunc='median', stdfunc='mad_std')
+            preprocessed = flat_correct(data, flat, norm_value=median)
             preprocessed.meta['preprocessed'] = True
-            preprocessed.write(path + '/preprocessed/pp'+obj_name+'_'+str(n)+'.fits')
+            preprocessed.write(path + '/preprocessed_r1/pp'+obj_name+'_'+str(n)+'.fits')
     def mask(path):
-        file = glob.glob(path + '/lights/DB_subed/*.fits')
-        os.mkdir(path + '/masked_test')
+        file = glob.glob(path + '/LIGHT/DB_subed/r/NGC59070000_r.fits')
+        #os.mkdir(path + '/masked_test1')
+        import matplotlib.pyplot as plt
         for i in range(len(file)):
             n = format(i, '04')
             hdu, hdr = Ccdprc.masking_single(file[i])
-            data= CCDData(hdu, unit=u.adu, header=hdr)
-            data.meta['masked'] = True
-            data.write(path+'/masked_test/test'+str(n)+'.fits')
-
+            plt.imshow(hdu, origin='lower')
+            plt.colorbar()
+    def se_mask(file):
+        import sep
+        data = fits.open(file)[0].data
+        hdr = fits.open(file)[0].header
+        data1 = data.astype(data.dtype.newbyteorder('='))
+        bkg_data = sep.Background(data1)
+        bkg = bkg_data.back()
+        bkg_rms = bkg_data.globalrms
+        subd = data - bkg
+        obj, seg_map = sep.extract(subd, 3*bkg_rms, segmentation_map=True)
+        mask_map = np.array(seg_map)
+        from scipy.ndimage import binary_dilation
+        import skimage
+        kernel = skimage.morphology.disk(3)
+        mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
+        masked = np.where((mask_map_d!=0), np.nan, data)
+        return masked, hdr
+        
 
        
             
 
-#Ccdprc.combine_bias('/volumes/ssd/intern/2024-12-01G')
-#Ccdprc.combine_dark('/volumes/ssd/intern/2024-12-01G')
-#Ccdprc.DB_sub('/volumes/ssd/intern/2024-12-01G', 'Abell2634')
-#Ccdprc.combine_dark_sky_flat('/volumes/ssd/intern/2024-12-01G')
-#Ccdprc.flat_correct('/volumes/ssd/intern/2024-12-01G', 'Abell2634')
+#Ccdprc.combine_bias('/volumes/ssd/2025-05-25')
+#Ccdprc.combine_dark('/volumes/ssd/2025-05-25')
+#Ccdprc.DB_sub('/volumes/ssd/2025-05-25', 'NGC5907')
+#Ccdprc.combine_dark_sky_flat('/volumes/ssd/2025-05-25/LIGHT/DB_subed/r')
+#Ccdprc.mask('/volumes/ssd/2025-05-25')
+#Ccdprc.flat_correct('/volumes/ssd/2025-05-25', 'NGC5907')
