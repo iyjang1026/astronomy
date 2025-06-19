@@ -6,6 +6,12 @@ from ccdproc import combine, subtract_bias, subtract_dark, flat_correct
 import numpy as np
 import glob
 import os
+import weakref
+import warnings
+
+
+warnings.filterwarnings('ignore')
+
 class Ccdprc:
     def __init__(self, path):
         import glob
@@ -79,6 +85,7 @@ class Ccdprc:
 
         segment_map = detect_sources(convolved_data, threshold, npixels=6)
         mask_map = np.array(segment_map)
+        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]])
         mask_map = binary_dilation(mask_map, kernel, iterations=2)
         masked = np.where((mask_map!=0), np.nan, sub_d)
         return masked, hdr
@@ -92,10 +99,13 @@ class Ccdprc:
             data = CCDData(hdu, unit=u.adu, header=hdr)
             flat.append(data)
             print(f'appended {i+1}')
+        def mode(a):
+            from scipy.stats import mode
+            return (a - mode(a)[0])/mode(a)[0]
 
         #"""
-        combined_flat = combine(img_list=flat, method='median', sigma_clip=True, sigma_clip_dev_func=mad_std, sigma_clip_func=np.median,
-                                sigma_clip_high_thresh=3, sigma_clip_low_thresh=6)
+        combined_flat = combine(img_list=flat, method='median',scale=mode,sigma_clip=True, sigma_clip_dev_func=mad_std, sigma_clip_func=np.median,
+                                sigma_clip_high_thresh=3, sigma_clip_low_thresh=6,overwrite_output=True)
         #"""
         #combined_flat = CCDData(np.ma.median(np.array(flat), axis=0), unit=u.adu)
         combined_flat.meta['combined'] = True
@@ -105,15 +115,15 @@ class Ccdprc:
         
     
     def flat_correct(path, obj_name):
-        file = glob.glob(path+'/LIGHT/DB_subed/r/N*.fits')
-        flat = CCDData.read(path+'/LIGHT/DB_subed/r/fd.fits', unit=u.adu)
+        file = glob.glob(path+'/r/N*.fits')
+        flat = CCDData.read(path+'/test_dark_sky.fits', unit=u.adu)
         os.mkdir(path+'/preprocessed_r1')
         from astropy.stats import sigma_clipped_stats, mad_std
         for i in range(len(file)):
             data = CCDData.read(file[i], unit=u.adu)
             n = format(i, '04')
-            mean, median, std = sigma_clipped_stats(data, cenfunc='median', stdfunc='mad_std')
-            preprocessed = flat_correct(data, flat, norm_value=median)
+            #mean, median, std = sigma_clipped_stats(data, cenfunc='median', stdfunc='mad_std')
+            preprocessed = flat_correct(data, flat)
             preprocessed.meta['preprocessed'] = True
             preprocessed.write(path + '/preprocessed_r1/pp'+obj_name+'_'+str(n)+'.fits')
     def mask(path):
@@ -150,6 +160,6 @@ class Ccdprc:
 #Ccdprc.combine_bias('/volumes/ssd/2025-05-25')
 #Ccdprc.combine_dark('/volumes/ssd/2025-05-25')
 #Ccdprc.DB_sub('/volumes/ssd/2025-05-25', 'NGC5907')
-#Ccdprc.combine_dark_sky_flat('/volumes/ssd/2025-05-25/LIGHT/DB_subed/r')
+#Ccdprc.combine_dark_sky_flat('/media/iyjang/SSD/2025-05-25/LIGHT/DB_subed/r')
 #Ccdprc.mask('/volumes/ssd/2025-05-25')
-#Ccdprc.flat_correct('/volumes/ssd/2025-05-25', 'NGC5907')
+Ccdprc.flat_correct('/media/iyjang/SSD/2025-05-12', 'NGC5907')
