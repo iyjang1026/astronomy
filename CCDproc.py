@@ -6,12 +6,6 @@ from ccdproc import combine, subtract_bias, subtract_dark, flat_correct
 import numpy as np
 import glob
 import os
-import weakref
-import warnings
-
-
-warnings.filterwarnings('ignore')
-
 class Ccdprc:
     def __init__(self, path):
         import glob
@@ -85,56 +79,10 @@ class Ccdprc:
 
         segment_map = detect_sources(convolved_data, threshold, npixels=6)
         mask_map = np.array(segment_map)
-        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]])
         mask_map = binary_dilation(mask_map, kernel, iterations=2)
         masked = np.where((mask_map!=0), np.nan, sub_d)
         return masked, hdr
     
-    def combine_dark_sky_flat(path):
-        import glob
-        file = glob.glob(path + '/N*.fits')
-        flat = []
-        for i in range(len(file)):
-            hdu,hdr = Ccdprc.masking_single(file[i])
-            data = CCDData(hdu, unit=u.adu, header=hdr)
-            flat.append(data)
-            print(f'appended {i+1}')
-        def mode(a):
-            from scipy.stats import mode
-            return (a - mode(a)[0])/mode(a)[0]
-
-        #"""
-        combined_flat = combine(img_list=flat, method='median',scale=mode,sigma_clip=True, sigma_clip_dev_func=mad_std, sigma_clip_func=np.median,
-                                sigma_clip_high_thresh=3, sigma_clip_low_thresh=6,overwrite_output=True)
-        #"""
-        #combined_flat = CCDData(np.ma.median(np.array(flat), axis=0), unit=u.adu)
-        combined_flat.meta['combined'] = True
-        combined_flat.meta['IMAGETYP'] = 'FLAT'
-        combined_flat.write(path + '/fd.fits')
-        print(f'dark sky flat is made')
-        
-    
-    def flat_correct(path, obj_name):
-        file = glob.glob(path+'/r/N*.fits')
-        flat = CCDData.read(path+'/test_dark_sky.fits', unit=u.adu)
-        os.mkdir(path+'/preprocessed_r1')
-        from astropy.stats import sigma_clipped_stats, mad_std
-        for i in range(len(file)):
-            data = CCDData.read(file[i], unit=u.adu)
-            n = format(i, '04')
-            #mean, median, std = sigma_clipped_stats(data, cenfunc='median', stdfunc='mad_std')
-            preprocessed = flat_correct(data, flat)
-            preprocessed.meta['preprocessed'] = True
-            preprocessed.write(path + '/preprocessed_r1/pp'+obj_name+'_'+str(n)+'.fits')
-    def mask(path):
-        file = glob.glob(path + '/LIGHT/DB_subed/r/NGC59070000_r.fits')
-        #os.mkdir(path + '/masked_test1')
-        import matplotlib.pyplot as plt
-        for i in range(len(file)):
-            n = format(i, '04')
-            hdu, hdr = Ccdprc.masking_single(file[i])
-            plt.imshow(hdu, origin='lower')
-            plt.colorbar()
     def se_mask(file):
         import sep
         data = fits.open(file)[0].data
@@ -152,14 +100,89 @@ class Ccdprc:
         mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
         masked = np.where((mask_map_d!=0), np.nan, data)
         return masked, hdr
-        
+    
+    def combine_dark_sky_flat(path1):
+        import numpy as np
+        import astropy.io.fits as fits
+        from multiprocessing import Process, JoinableQueue
+        import multiprocessing
+        import glob
+        import warnings
+        from scipy.stats import mode
+        import weakref
+        import progressbar
 
-       
+        warnings.filterwarnings('ignore')
+
+        def mask(path):
+            file = glob.glob(path + '/N*.fits')
+            scale_list = []
+            mode0 = []
+            bar0 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
+            for n in range(len(file)):
+                data = Ccdprc.se_mask(file[n])
+                mode1 = mode(data[~np.isnan(data)])[0]
+                scaled_data = (data - mode1)/mode1
+                scale_list.append(scaled_data)
+                mode0.append(mode1)
+                bar0.update(n)
+            bar0.finish()
+            mode_tot = np.median(np.array(mode0))
+            return np.array(scale_list), mode_tot
+
+        def index(arr,q):
+            l,x,y = arr.shape
+            data_zero = np.zeros((x,y))
+            for i in range(x):
+                for j in range(y):
+                    arr_data = arr[:,i,j]
+                    weak_data = weakref.ref(arr_data)()
+                    data_zero[i,j] += np.median(weak_data[~np.isnan(weak_data)])
+    
+            q.put(weakref.ref(data_zero)())
+    
+        def main(path):
+            multiprocessing.freeze_support()
+            data_tot, mode_tot = mask(path)
+            tasks=[]
+            q = JoinableQueue()
+            for k in range(multiprocessing.cpu_count()):
+                thread = Process(target=index, args=(data_tot, q))
+                tasks.append(thread)
+                thread.start()
+    
+            result = q.get()
+            for task in tasks:
+                task.kill()
+                task.join()
+            data_final = np.array(result)*mode_tot + mode_tot
+            fits.writeto(path+'/dark_sky_flat.fits', data_final , overwrite=True)
+            print(f'processes finished')
+    
+
+        if __name__ == '__main__':
+            main(path1)
+
+        
+    
+    def flat_correct(path, obj_name):
+        file = glob.glob(path+'/LIGHT/DB_subed/r/N*.fits')
+        flat = CCDData.read(path+'/LIGHT/DB_subed/r/fd.fits', unit=u.adu)
+        os.mkdir(path+'/preprocessed_r1')
+        from astropy.stats import sigma_clipped_stats
+        for i in range(len(file)):
+            data = CCDData.read(file[i], unit=u.adu)
+            n = format(i, '04')
+            mean, median, std = sigma_clipped_stats(data, cenfunc='median', stdfunc='mad_std')
+            preprocessed = flat_correct(data, flat, norm_value=median)
+            preprocessed.meta['preprocessed'] = True
+            preprocessed.write(path + '/preprocessed_r1/pp'+obj_name+'_'+str(n)+'.fits')
+        
             
 
 #Ccdprc.combine_bias('/volumes/ssd/2025-05-25')
 #Ccdprc.combine_dark('/volumes/ssd/2025-05-25')
 #Ccdprc.DB_sub('/volumes/ssd/2025-05-25', 'NGC5907')
-#Ccdprc.combine_dark_sky_flat('/media/iyjang/SSD/2025-05-25/LIGHT/DB_subed/r')
+#Ccdprc.combine_dark_sky_flat('/volumes/ssd/2025-05-25')
 #Ccdprc.mask('/volumes/ssd/2025-05-25')
-Ccdprc.flat_correct('/media/iyjang/SSD/2025-05-12', 'NGC5907')
+#Ccdprc.flat_correct('/volumes/ssd/2025-05-25', 'NGC5907')
