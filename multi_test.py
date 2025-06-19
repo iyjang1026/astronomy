@@ -1,11 +1,12 @@
 import numpy as np
 import astropy.io.fits as fits
 from astropy.stats import sigma_clip
-from multiprocessing import Process, JoinableQueue
+from multiprocessing import Process, Queue, JoinableQueue
 import multiprocessing
 import glob
 import warnings
-from scipy.stats import mode 
+from scipy.stats import mode
+import matplotlib.pyplot as plt
 import weakref
 import sep
 from scipy.ndimage import binary_dilation
@@ -20,9 +21,9 @@ def se_mask(file):
     bkg = bkg_data.back()
     bkg_rms = bkg_data.globalrms
     subd = data - bkg
-    obj, seg_map = sep.extract(subd, 2*bkg_rms, segmentation_map=True)
+    obj, seg_map = sep.extract(subd, 3*bkg_rms, segmentation_map=True)
     mask_map = np.array(seg_map)
-    kernel = skimage.morphology.disk(3) #np.array([[1,1,1],[1,1,1],[1,1,1]])
+    kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
     mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
     masked = np.where((mask_map_d!=0), np.nan, data0)
     return masked
@@ -32,52 +33,49 @@ warnings.filterwarnings('ignore')
 def mask(path):
     file = glob.glob(path + '/N*.fits')
     data_list = []
+    scale_list = []
     bar0 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
     for n in range(len(file)):
         data = se_mask(file[n])
-        clip_data = sigma_clip(data, sigma_lower=6, sigma_upper=3, cenfunc='median', stdfunc='mad_std')
-        mode1 = mode(data[~np.isnan(clip_data)])[0]
-        mode_arr = (clip_data - mode1)/mode1
-        data_list.append(mode_arr)
+        mode1 = mode(data[~np.isnan(data)])[0]
+        scaled_data = (data - mode1)/np.std(data[~np.isnan(data)])
+        data_list.append(data)
+        scale_list.append(scaled_data)
         bar0.update(n)
     bar0.finish()
-    return np.array(data_list)
+    return np.array(data_list), np.array(scale_list)
 
-
-
-#bar = progressbar.ProgressBar(maxval=x,widgets=['[',progressbar.Timer(),']', progressbar.Bar()]).start()
-def index(arr,q):
+def index(arr, arr1,q):
     l,x,y = arr.shape
     data_zero = np.zeros((x,y))
     for i in range(x):
         for j in range(y):
-            arr_data = arr[:,i,j] 
+            arr_data = arr1[:,i,j]
+            arr_t = arr[:,i,j]
             weak_data = weakref.ref(arr_data)()
-            data_zero[i,j] += np.median(weak_data[~np.isnan(weak_data)])
-    q.put(weakref.ref(data_zero)()) 
+            median = np.median(weak_data[~np.isnan(weak_data)])
+            idx_median = np.abs(weak_data - median).argmin()
+            flat_data = arr_t[idx_median]
+            data_zero[i,j] += flat_data
+    q.put(weakref.ref(data_zero)())
     
 def main():
     multiprocessing.freeze_support()
-    data_tot = mask('/media/iyjang/SSD/2025-05-12/r')
-    #stop_event = multiprocessing.Event()
+    data_tot, scale_tot = mask('/volumes/ssd/2025-06-16/LIGHT/DB_subed/r')
     tasks=[]
     q = JoinableQueue()
     for k in range(multiprocessing.cpu_count()):
-        thread = Process(target=index, args=(data_tot, q))
+        thread = Process(target=index, args=(data_tot,scale_tot, q))
         tasks.append(thread)
         thread.start()
     
-    #stop_event.set()
-    #print(f'stop signal')
     result = q.get()
     for task in tasks:
-        #q.join()
         task.kill()
         task.join()
-    data = np.array(result)
-    fits.writeto('/media/iyjang/SSD/2025-05-12/test_dark_sky.fits', data, overwrite=True)
+    fits.writeto('/volumes/ssd/2025-06-16/test_dark_sky.fits', np.array(result), overwrite=True)
     print(f'processes finished')
     
 
 if __name__ == '__main__':
-    main() 
+    main()
