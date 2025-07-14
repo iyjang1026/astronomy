@@ -2,15 +2,16 @@ from photutils.background import Background2D, MedianBackground
 import astropy.io.fits as fits
 import numpy as np
 import matplotlib.pyplot as plt
-from photutils.segmentation import SourceFinder
+from photutils.segmentation import SourceFinder, detect_threshold
 from astropy.convolution import convolve
 from photutils.segmentation import make_2dgaussian_kernel
 import warnings
 from astropy.modeling import models, fitting
 import astropy.io.fits as fits
-from astropy.stats import sigma_clipped_stats
-
-
+from astropy.stats import sigma_clipped_stats, SigmaClip
+import sep
+from scipy.ndimage import binary_dilation
+from starfinder import region_mask
 
 def mask(single_name):
         data1 = fits.open(single_name)[0].data
@@ -30,7 +31,21 @@ def mask(single_name):
         smoothed = convolve(mask_map, kernel)
 
         masked = np.where((smoothed!=0), np.nan, data1)
-        return masked
+        return smoothed #masked
+
+def se_mask(single_name):
+        data = fits.open(single_name)[0].data
+        data1 = data.astype(data.dtype.newbyteorder('='))
+        bkg = sep.Background(data1)
+        bkg_rms = bkg.rms()
+        mean, median, std = sigma_clipped_stats(bkg_rms, cenfunc='median', stdfunc='mad_std', sigma=3)
+        subd = data - bkg
+        obj, seg_map = sep.extract(subd, 3.0*bkg.globalrms, segmentation_map=True) 
+        mask_map = np.array(seg_map)
+        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
+        mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
+        masked = np.where((mask_map_d!=0), np.nan, data)
+        return masked.astype(np.float32)
 
 def sky_model(data, bin):
         img_height, img_width = data.shape
@@ -82,28 +97,68 @@ def sub(data, sky):
         sub = np.array(data) - np.array(sky)
         return sub
 
-import ray
-@ray.remote
+import progressbar
+
 def sky_sub(path, obj_name):
       import glob
       import os
       if not os.path.exists(path + '/sky_subed'):
         os.mkdir(path + '/sky_subed')
-
-      p = glob.glob(path + '/pp*.fits')
+      p = glob.glob(path + '/pp/pp*.fits')
+      bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
+      from starfinder import region_mask
       for i in range(len(p)):
         n = format(i, '04')
         input = p[i]
         hdr = fits.open(input)[0].header
         data = fits.open(input)[0].data
-        data1 = mask(input)
-        sky = sky_model(data1, 64)
-        subed = sub(data,sky)
+        data1 = region_mask(data).astype(np.float32)
+        sky = sky_model(data1, 64).astype(np.float32)
+        subed = sub(data,sky).astype(np.float32)
         hdr.append(('sky_sub', 'Python', 'sky subtraction' ))
         fits.writeto(path +'/sky_subed/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
+        bar1.update(i)
+      bar1.finish()
 
+def astrometry(path, obj_name, ra, dec, radius):
+    file = open(path+'/'+obj_name+'.sh', 'w')
+    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved')
+    file.close()
 
 warnings.filterwarnings('ignore')
-ray.init(num_cpus=8)
-ray.get(sky_sub.remote('/volumes/ssd/2025-06-27/g_pp', 'Abell1656'))
 
+def model_plot(path):
+     from starfinder import region_mask
+     hdu = fits.open(path)[0].data 
+     masked = region_mask(hdu)
+     sky = sky_model(masked, 64)
+     plt.imshow(sky, cmap='grey', origin='lower')
+     plt.colorbar()
+     plt.title('Bkg Model')
+     plt.show()
+
+def mask_plot(path):
+     from starfinder import region_mask
+     hdu = fits.open(path)[0].data
+     masked = region_mask(hdu)
+     plt.imshow(np.log10(masked), origin='lower')
+     plt.colorbar()
+     plt.title('Masked Image')
+     plt.show()
+
+def save_mask(path):
+     hdu = fits.open(path)[0].data
+     masked = region_mask(hdu)
+     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_masked_coadd1.fits', masked, overwrite=True)
+
+def save_model(path):
+     masked = se_mask(path)
+     sky = sky_model(masked, 64)
+     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg.fits', sky, overwrite=True)
+
+#sky_sub('/volumes/ssd/intern/25_summer/M101_L', 'M101')
+#astrometry('/volumes/ssd/intern/25_summer/NGC891_r/sky_subed','NGC891','02:22:32.9','+42:20:54.0','1.5')
+#save_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/.fits')
+#save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM1010000.fits')
+#model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
+#mask_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')

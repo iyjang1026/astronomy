@@ -2,19 +2,23 @@ import numpy as np
 import progressbar
 import glob
 import astropy.io.fits as fits
-from astropy.stats import sigma_clipped_stats
+from astropy.stats import sigma_clipped_stats, sigma_clip
+from astropy.convolution import convolve
 import sep
 from scipy.ndimage import binary_dilation
 from scipy.stats import mode
 import os
 import warnings
+import weakref
 import ray
+from photutils.background import Background2D, MedianBackground
+from photutils.segmentation import make_2dgaussian_kernel, detect_sources
 
 warnings.filterwarnings('ignore')
 
 class Fits:
     def __init__(self, path):
-        self.path = glob.glob(path + '/*.fits')
+        self.path = glob.glob(path + '/*.fit')
 
     def mkdir(path, folder):
         if not os.path.exists(path + folder):
@@ -32,69 +36,85 @@ class Combine(Fits):
 
 class Masking(Fits):
     def se_mask(arr):
-        data = np.array(arr, dtype=float)
+        data = np.array(arr)
         data1 = data.astype(data.dtype.newbyteorder('='))
-
-        bkg_data = sep.Background(data1)
-        bkg = bkg_data.back()
-        bkg_rms = bkg_data.rms()
-        
-        mean, median, std = sigma_clipped_stats(bkg_rms, cenfunc='median', stdfunc='mad_std', sigma=3)
-        threshold = median - 3*std
+        bkg = sep.Background(data1)
         subd = data - bkg
-        obj, seg_map = sep.extract(subd, threshold , segmentation_map=True)
+        obj, seg_map = sep.extract(subd, 1.5*bkg.globalrms, segmentation_map=True)
         mask_map = np.array(seg_map)
         kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
         mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
         masked = np.where((mask_map_d!=0), np.nan, data)
-        return masked
-
+        return masked.astype(np.float32)
+    
+    def masking(arr):
+        bkg_estimator = MedianBackground()
+        bkg = Background2D(arr, (64,64), filter_size=(3,3), bkg_estimator=bkg_estimator)
+        data = arr - bkg.background
+        threshold = 3 * bkg.background_rms
+        kernel = make_2dgaussian_kernel(3.0, size=5)
+        convolved_data = convolve(data, kernel)
+        seg_map = detect_sources(convolved_data, threshold, npixels=10)
+        mask_map = np.array(seg_map)
+        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
+        mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
+        masked = np.where((mask_map_d!=0), np.nan, arr)
+        return masked.astype(np.float32)
+    
 class Master(Fits):
     def master_bias(path):
         file = Fits(path + '/BIAS').path
         b_list = []
         for i in range(len(file)):
-            hdu = fits.open(file[i])[0].data
-            b_list.append(hdu)
+            hdul = fits.open(file[i])
+            hdu = hdul[0].data
+            b_list.append(weakref.ref(hdu)())
         master_bias = Combine.median_comb(np.array(b_list))
-        return master_bias
+        return master_bias.astype(np.float32)
     
     def master_dark(path, bias):
         dark_file = Fits(path + '/DARK').path
         d_list = []
         for i in range(len(dark_file)):
-            dark_data = fits.open(dark_file[i])[0].data
+            hdul = fits.open(dark_file[i])
+            dark_data = hdul[0].data
             bias_subed = dark_data - bias
-            d_list.append(bias_subed)
+            bias_subed.astype(np.float32)
+            d_list.append(weakref.ref(bias_subed)())
+            hdul.close()
         master_dark = Combine.median_comb(np.array(d_list))
-        return master_dark
+        return master_dark.astype(np.float32)
     
     def dark_sky_flat(path):
-        flat_file = Fits(path + '/pp_obj').path
+        from starfinder import region_mask
+        flat_file = glob.glob(path +'/pp_obj/pp*.fit')
         scale_list = []
         mode_list = []
         bar0 = progressbar.ProgressBar(maxval=len(flat_file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
         for i in range(len(flat_file)):
-            flat_data = fits.open(flat_file[i])[0].data
-            db_subed = flat_data
-            masked = Masking.se_mask(db_subed)
+            flat_data, scaled_data, mode1, masked = None,None,None,None
+            hdul = fits.open(flat_file[i])
+            flat_data = weakref.ref(hdul[0].data)()
+            masked = region_mask(flat_data) #Masking.masking(flat_data)
             mode1 = mode(masked[~np.isnan(masked)])[0]
-            scaled_data = (masked - mode1)/mode1
+            scaled_data = np.array((masked - mode1)/mode1).astype(np.float32)
             scale_list.append(scaled_data)
             mode_list.append(mode1)
+            hdul.close()
             bar0.update(i)
         mode_tot = np.array(mode_list)
-        mean, median, std = sigma_clipped_stats(mode_tot, cenfunc='median', stdfunc='mad_std', sigma=3)
-        mode0 = median
-        flat_arr = np.array(scale_list)
+        mean, mode0, std = sigma_clipped_stats(mode_tot, cenfunc='median', stdfunc='mad_std', sigma=3)
+        flat_arr = np.array(scale_list).astype(np.float32)
         bar0.finish()
-        scaled_flat = np.array(Combine.nanmedian_comb(flat_arr))
-        master_flat = scaled_flat * mode0 + mode0
-        fits.writeto(path + '/process/master_flat.fits', master_flat, overwrite=True)
-        #return master_flat
+        scaled_flat = np.nanmedian(weakref.ref(flat_arr)(), axis=0)
+        scaled_flat.astype(np.float32)
+        master_flat = np.array((scaled_flat * mode0) + mode0, dtype=np.float32)
+        fits.writeto(path + '/process/master_flat.fits', weakref.ref(master_flat)(), overwrite=True)
+        bar0.finish()
+        print(f'master flat has been made')
 
     def dome_flat(path):
-        file = Fits(path + '/flat').path
+        file = glob.glob(path +'/pp_obj/pp*.fit')
         data = []
         for i in file:
             hdu = fits.open(i)[0].data 
@@ -115,15 +135,20 @@ def db_sub(path, obj_name):
     bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
     for i in range(len(file)):
         n = format(i, '04')
-        l_hdu = fits.open(file[i])[0].data
-        l_hdr = fits.open(file[i])[0].header
+        hdul = fits.open(file[i])
+        l_hdu = hdul[0].data
+        l_hdr = hdul[0].header
+        l_hdu.astype(np.float32)
         l_db = l_hdu - bias - dark
-        fits.writeto(path + '/pp_obj/pp'+obj_name+str(n)+'.fits', l_db, header=l_hdr, overwrite=True)
+        l_db.astype(np.float32)
+        fits.writeto(path + '/pp_obj/pp'+obj_name+'_'+str(n)+'.fit', weakref.ref(l_db)(), header=l_hdr, overwrite=True)
+        hdul.close()
         bar1.update(i)
     bar1.finish()
+    print(f'dark and bias are subed')
 
 def flat_corr(path, obj_name):
-    file = Fits(path).path
+    file = Fits(path + '/pp_obj').path
     flat = fits.open(path + '/process/master_flat.fits')[0].data
     Fits.mkdir(path, '/pp')
     bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
@@ -131,27 +156,40 @@ def flat_corr(path, obj_name):
         n = format(i, '04')
         l_hdu = fits.open(file[i])[0].data
         l_hdr = fits.open(file[i])[0].header
-        l_db = l_hdu
+        l_db = l_hdu.astype(np.float32)
         mean, median, std = sigma_clipped_stats(flat, cenfunc='median', stdfunc='mad_std', sigma=3)
         l_final = l_db / (flat / median)
-        fits.writeto(path + '/pp/pp'+obj_name+str(n)+'.fits', l_final, header=l_hdr, overwrite=True)
+        l_final.astype(np.float32)
+        fits.writeto(path + '/pp/pp'+obj_name+'_'+str(n)+'.fits', weakref.ref(l_final)(), header=l_hdr, overwrite=True)
         bar1.update(i)
     bar1.finish()
+    print(f'preprocessing complete')
 
 def astrometry(path, obj_name, ra, dec, radius):
     file = open(path+'/'+obj_name+'.sh', 'w')
     file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved')
     file.close()
 
-@ray.remote
-def main(path, obj_name):
+import time
+
+def process(path, obj_name):
+    start_time = time.time()
     Fits.mkdir(path, '/process')
     db_sub(path, obj_name)
     Master.dark_sky_flat(path)
     flat_corr(path, obj_name)
-    
-   
+    end_time = time.time()
+    eta = end_time - start_time
+    print(f'{eta//60} min {eta-(eta//60)*60} seconds')
 
-    
-#ray.get(main.remote('/volumes/ssd/2025-06-27', 'Abell1656'))
+#from sky_sub import sky_sub
+
+def full_proc(path, obj_name):
+    process(path, obj_name)
+    #sky_sub(path, obj_name)
+
+if __name__ == '__main__':
+    #process('/volumes/ssd/intern/25_summer/NGC4236_r', 'NGC4236')
+    process('/volumes/ssd/intern/25_summer/M101_L', 'M101')
+    #astrometry('/volumes/ssd/intern/25_summer/M101_L/sky_subed','M101','14:03:12.6','+54:20:55.5','1.5')
 

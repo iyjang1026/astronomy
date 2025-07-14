@@ -2,13 +2,14 @@ import numpy as np
 import progressbar
 import glob
 import astropy.io.fits as fits
-from astropy.stats import sigma_clipped_stats
+from astropy.stats import sigma_clipped_stats, SigmaClip
 import sep
 from scipy.ndimage import binary_dilation
 from scipy.stats import mode
 import os
 import warnings
-import ray
+from photutils.segmentation import detect_threshold
+
 
 warnings.filterwarnings('ignore')
 
@@ -37,10 +38,10 @@ class Masking(Fits):
 
         bkg_data = sep.Background(data1)
         bkg = bkg_data.back()
-        bkg_rms = bkg_data.rms()
         
-        mean, median, std = sigma_clipped_stats(bkg_rms, cenfunc='median', stdfunc='mad_std', sigma=3)
-        threshold = median - 3*std
+        sigma = SigmaClip(sigma=3.0, maxiters=10)
+        
+        threshold = np.median(detect_threshold(data1, nsigma=3.0, sigma_clip=sigma))
         subd = data - bkg
         obj, seg_map = sep.extract(subd, threshold , segmentation_map=True)
         mask_map = np.array(seg_map)
@@ -148,9 +149,9 @@ def split_rgb(path, obj_name):
     convert_fits.debayer_RGGB_multi(path)
     convert_fits.split_rgb_multi(path, obj_name)
 
-ray.init(num_cpus=8)
-@ray.remote
-def main(path, obj_name):
+import time
+def process(path, obj_name):
+    start_time = time.time()
     Fits.mkdir(path, '/process')
     db_sub(path, obj_name)
     convert_fits.debayer_RGGB_multi(path)
@@ -159,9 +160,7 @@ def main(path, obj_name):
     for i in color_list:
         Master.dark_sky_flat(path, i)
         flat_corr(path, obj_name, i)
-    
-   
+    end_time = time.time()
+    print(f'{end_time - start_time} seconds') 
 
-    
-ray.get(main.remote('/volumes/ssd/2025-06-27', 'Abell1656'))
-
+process('/volumes/ssd/2025-06-27', 'Abell1656')
