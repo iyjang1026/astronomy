@@ -7,6 +7,7 @@ from astropy.modeling import models, fitting
 from astropy.stats import sigma_clipped_stats
 import glob
 import sys
+from mask import region_mask
 def coadd_plot(path):
     hdul = fits.open(path)
     hdu = hdul[0].data 
@@ -16,35 +17,29 @@ def coadd_plot(path):
     fig, ax = plt.subplots(subplot_kw=dict(projection=wcs))
     ax.imshow(hdu, vmax=median+3*std, vmin=median-3*std, cmap='grey', origin='lower')
     ax.set(xlabel='R.A.', ylabel='Dec')
-    ax.set_title('Coadd Image')
+    ax.set_title('sep masking flat, model processed')
     print(std)
     plt.show()
 
 
 def hist(path):
-    file = glob.glob(path + '/pp_masked*.fits')
+    file = glob.glob(path + '/pp_masked_nrm*.fits')
+    print(file)
     bin = 1024
-    for i in file:
-        hdul = fits.open(i)
-        hdu = hdul[0].data 
-        hdul.close()
+    sampling_size = 1000
+    name = ['rm_rm_single', 'sep_sep_single', 'rm_rm_coadd','sep_sep_coadd','sep_rm_single', 'sep_rm_coadd']
+    for i in range(len(file)):
+        hdu = fits.open(file[i])[0].data
+        x,y = hdu.shape
+        std_data = hdu[int(x/2-sampling_size/2):int(x/2+sampling_size/2),
+                       int(y/2-sampling_size/2):int(y/2+sampling_size/2)]
         hdu1 = hdu[~np.isnan(hdu)].flatten()
-        hdu0 = np.resize(hdu1, (bin,))
         hdu1.astype(np.float32)
-        print(hdu1.shape)
-        #sys.exit()
         hdu2, bin_edges2 = np.histogram(hdu1, bins=bin, range=(-10000,10000))
-        """
-        max_idx = np.where(hdu2==np.max(hdu2))
-        hist_n = np.delete(hdu2, max_idx)
-        """
         x1 = np.resize(bin_edges2, (bin,))
         norm_count = (hdu2 - np.max(hdu2)) / np.max(hdu2)
-        if i == path+'/pp_masked.fits':
-            label = 'single_image'
-        else:
-            label = 'coadded_image'
-        mean1, median1, std1, = sigma_clipped_stats(hdu1, cenfunc='median', stdfunc='mad_std', sigma=3)
+        m, medi, std1 = sigma_clipped_stats(std_data, cenfunc='median', stdfunc='mad_std', sigma=3)
+        label = name[i]
         print(f'std of {label} is {std1}')
         plt.plot(x1, norm_count, label=label)
 
@@ -52,11 +47,11 @@ def hist(path):
     #plt.plot(x1, g(x1), label='fitted')
     
     plt.legend()
-    plt.title('Image Histogram')
+    plt.title('Histogram of each process')
     plt.xlabel('Level(ADU)')
     plt.ylabel('Normalized Count')
-    plt.xlim(-3000,3000)
-    plt.show()
+    plt.xlim(-1500,1500)
+    #plt.show()
 
 def image_plot(path):
     preprocessed = glob.glob(path + '/pp/pp*.fits')[0]
@@ -119,76 +114,98 @@ def residual(path):
     plt.imshow(residual, vmax=np.median(residual)+3*np.std(residual),vmin=np.median(residual)-3*np.std(residual)
                ,origin='lower')
     plt.colorbar()
+    plt.title('region masked flat - sep masked flat')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.show()
 
 
 def coadd_mask(path):
-    import numpy as np
-    from matplotlib import pyplot as plt
-    from astropy.io import fits
-    from astropy.convolution import convolve
-    from photutils.segmentation import detect_sources, make_2dgaussian_kernel, SourceCatalog, deblend_sources
-    from photutils.background import MedianBackground, Background2D
-    from photutils.aperture import EllipticalAperture
     hdu0 = fits.open(path)[0].data 
-    hdu = hdu0[600:2600,500:2500]
-    bkg_est = MedianBackground()
-    bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est)
-    data = hdu - bkg.background
-    threshold = 3.0*bkg.background_rms
-    kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
-    conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=10)
-    segm_deblend = deblend_sources(conv_hdu, seg_map,
-                               npixels=10, nlevels=32, contrast=0.001,
-                               progress_bar=False)
-    cat = SourceCatalog(data, segm_deblend, convolved_data=conv_hdu)
-    cat.to_table()
-    ap = cat.kron_aperture
-    a_list = []
-    for i in ap:
-        a = None
-        a = i.a
-        a_list.append(a)
-    max_idx = np.argmax(np.array(a_list).astype(np.float32))
-    g_aper = ap[max_idx]
-    a = g_aper.a
-    b = g_aper.b
-    xypos = g_aper.positions
-    theta = g_aper.theta
-    xy = (int(xypos[0]), int(xypos[1]))
-    aperture = EllipticalAperture(xy, 5*a, 5*b, theta=theta)
-    mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
-    arr_zero = np.zeros_like(hdu0).astype(np.float32)
-    mask_x, mask_y = mask.shape
-    st_x = np.int16(xy[1] - mask_x/2)
-    st_y = np.int16(xy[0] - mask_y/2)
-    arr_zero[st_x:st_x+mask_x, st_y:st_y+mask_y] += mask[:mask_x,:mask_y]
-    seg = np.array(seg_map)
-    masked = np.where(seg_map!=0, 1, 0) + arr_zero
-    
-    bkg_est = MedianBackground()
-    bkg = Background2D(hdu0, (64,64), filter_size=(3,3), bkg_estimator=bkg_est)
-    data = hdu0 - bkg.background
-    threshold = 3.0*bkg.background_rms
-    kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
-    conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=10)
-    arr = np.array(seg_map)
-    from scipy.ndimage import binary_dilation
-    kernel0 = np.array([[0,1,0],[1,1,1],[0,1,0]])
-    seg_d = binary_dilation(arr, kernel0, iterations=5)
-    arr0 = np.zeros_like(hdu0)
-    arr0[600:2600, 500:2500] += masked[:2000,:2000]
-    masked_t = np.where(seg_d!=0, 1, 0) + np.where(arr0!=2,0, 1)
-    tot_masked = np.where(masked_t!=0, np.nan, hdu0)
-    fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_masked_coadd.fits', tot_masked, overwrite=True)
-    plt.imshow(tot_masked, origin='lower')
+    min = np.min(hdu0)
+    max = np.max(hdu0)
+    norm_hdu = (hdu0 - min)/(max-min)
+    mask_samp = region_mask(norm_hdu, 1.5)
+    masked = np.where(mask_samp!=0, np.nan, hdu0)
+    median = np.nanmedian(masked)
+    std = np.nanstd(masked)
+    fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_masked_rm_rm_coadd.fits', masked, overwrite=True)
+    plt.imshow(masked, vmax=median+3*std, vmin=median-3*std, origin='lower')
     plt.show()
-#coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')
+    
+
+def img_show(path):
+    fig, axes = plt.subplots(1,2)
+    single = fits.open(path + '/pp_masked.fits')[0].data 
+    s_median = np.nanmedian(single)
+    s_std = np.nanstd(single)
+    coadd = fits.open(path + '/pp_masked_coadd.fits')[0].data
+    c_median = np.nanmedian(coadd)
+    c_std = np.nanstd(coadd)
+    axes[0].imshow(single, vmax=s_median+3*s_std, vmin=s_median-3*s_std
+                  ,origin='lower')
+    axes[1].imshow(coadd, vmax=c_median+3*c_std, vmin=c_median-3*c_std, origin='lower')
+    axes[0].set_xlabel('x')
+    axes[0].set_ylabel('y')
+    axes[0].set_title('Single Masked')
+    axes[1].set_xlabel('x')
+    axes[1].set_ylabel('y')
+    axes[1].set_title('Coadd Masked')
+    plt.show()
+def fig():
+    path = '/volumes/ssd/intern/25_summer/M101_L'
+    fig, axes = plt.subplots(1,2)
+    file = glob.glob(path + '/pp_masked_nrm*.fits')
+    for i in range(len(file)):
+        hdu = fits.open(file[i])[0].data 
+        mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
+        axes[i].imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower')
+        if file[i] == path +'/pp_masked_nrm.fits':
+            title = 'Single Image'
+        else:
+            title = 'Coadd Image'
+        axes[i].set_title(title)
+        axes[i].set_xlabel('x')
+        axes[i].set_ylabel('y')
+    plt.show()
+def std(arr):
+    import ray
+    import time
+    std_list = []
+    @ray.remote
+    def random_samp(arr, samp_size):
+        x, y = arr.shape
+        x_num = np.random.randint(0,x-samp_size)
+        y_num = np.random.randint(0,y-samp_size)
+        samp_arr = arr[x_num:x_num+samp_size,y_num:y_num+samp_size]
+        mean, median, std = sigma_clipped_stats(samp_arr, cenfunc='median',stdfunc='mad_std',sigma=3)
+        return std
+    #path = '/volumes/ssd/intern/25_summer/M101_L'
+    #hdu0 = fits.open(path+'/pp_masked_nrm.fits')[0].data
+    x,y = arr.shape
+    cx, cy = int(x/2), int(y/2)
+    hdu = arr[cx-1000:cx+1000, cy-1000:cy+1000]
+    st_time = time.time()
+    std_list.append(ray.get([random_samp.remote(hdu,200) for i in range(2000)]))
+    std_arr = np.array(std_list)
+    mean, median, std = sigma_clipped_stats(std_arr, cenfunc='median', stdfunc='mad_std', sigma=3)
+    end_time = time.time()
+    eta = end_time - st_time
+    print(median,f'{eta//60}mins {eta-(eta//60)}seconds')
+#coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_sub/coadd.fits')
 #hist('/volumes/ssd/intern/25_summer/M101_L')
-image_plot('/volumes/ssd/intern/25_summer/M101_L/')
+#image_plot('/volumes/ssd/intern/25_summer/M101_L/')
 #residual('/volumes/ssd/intern/25_summer/M101_L/process')
-#coadd_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')
+#coadd_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed_rm_rm/coadd.fits')
+#img_show('/volumes/ssd/intern/25_summer/M101_L')
+"""
+import warnings
+warnings.filterwarnings('ignore')
+hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_masked_rm_rm_coadd.fits')[0].data 
+std(hdu)
+
+hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data 
+mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
+plt.imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower', cmap='grey')
+plt.show()
+"""

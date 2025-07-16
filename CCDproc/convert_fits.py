@@ -20,7 +20,7 @@ class convert_fits:
         data = fits.open(path)[0]
         hdu = data.data
         hdr = data.header
-
+        hdu.astype(np.float32)
         import colour_demosaicing
         t = colour_demosaicing.demosaicing_CFA_Bayer_bilinear(hdu, pattern='RGGB') #change pattern same with yours
         raw, column, color = t.shape
@@ -37,7 +37,7 @@ class convert_fits:
             column_b = t[i].T[2]
             b.append(column_b)
 
-        img = np.array([r, g, b])
+        img = np.array([r, g, b], dtype=np.float32)
         return img, hdr
         
         #print(img.shape)
@@ -62,13 +62,13 @@ class convert_fits:
         r, g, b = hdu #split tri-colour
         
         hdr.append(('color', 'r', ''))
-        fits.writeto(path+obj_name+'r.fits', r, header=hdr, overwrite=True)
+        fits.writeto(path+obj_name+'r.fits', r.astype(np.float32), header=hdr, overwrite=True)
             
         hdr.update({'COLOR':'g'})
-        fits.writeto(path+obj_name+'g.fits', g, header=hdr, overwrite=True)
+        fits.writeto(path+obj_name+'g.fits', g.astype(np.float32), header=hdr, overwrite=True)
             
         hdr.update({'COLOR':'b'})
-        fits.writeto(path+obj_name+'b.fits', b, header=hdr, overwrite=True)
+        fits.writeto(path+obj_name+'b.fits', b.astype(np.float32), header=hdr, overwrite=True)
         
 
     def split_rgb_multi(path, obj_name): #splite rgb mulitple images
@@ -92,13 +92,13 @@ class convert_fits:
             r, g, b = hdu #split tri-colour
 
             hdr.append(('color', 'r', ''))
-            fits.writeto(r_path+obj_name+str(n)+'_r.fits', r, header=hdr, overwrite=True)
+            fits.writeto(r_path+obj_name+str(n)+'_r.fits', r.astype(np.float32), header=hdr, overwrite=True)
             
             hdr.update({'COLOR':'g'})
-            fits.writeto(g_path+obj_name+str(n)+'_g.fits', g, header=hdr, overwrite=True)
+            fits.writeto(g_path+obj_name+str(n)+'_g.fits', g.astype(np.float32), header=hdr, overwrite=True)
             
             hdr.update({'COLOR':'b'})
-            fits.writeto(b_path+obj_name+str(n)+'b.fits', b, header=hdr, overwrite=True)
+            fits.writeto(b_path+obj_name+str(n)+'b.fits', b.astype(np.float32), header=hdr, overwrite=True)
 
 #convert_fits.debayer_RGGB_multi('/volumes/ssd/2025-06-29')
 #convert_fits.split_rgb_multi('/volumes/ssd/2025-06-29/color_flat', 'flat')

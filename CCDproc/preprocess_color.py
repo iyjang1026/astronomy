@@ -9,7 +9,7 @@ from scipy.stats import mode
 import os
 import warnings
 from photutils.segmentation import detect_threshold
-
+from mask import region_mask
 
 warnings.filterwarnings('ignore')
 
@@ -58,7 +58,7 @@ class Master(Fits):
             hdu = fits.open(file[i])[0].data
             b_list.append(hdu)
         master_bias = Combine.median_comb(np.array(b_list))
-        return master_bias
+        return master_bias.astype(np.float32)
     
     def master_dark(path, bias):
         dark_file = Fits(path + '/DARK').path
@@ -68,30 +68,48 @@ class Master(Fits):
             bias_subed = dark_data - bias
             d_list.append(bias_subed)
         master_dark = Combine.median_comb(np.array(d_list))
-        return master_dark
+        return master_dark.astype(np.float32)
     
+    def masking(path, color):
+        import ray
+        file = glob.glob(path +'/'+color+'/*.fits')
+        Fits.mkdir(path+'/'+color, '/mask')
+        bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
+        @ray.remote
+        def mask(file, i):
+            hdu = fits.open(file[i])[0].data 
+            n = format(i, '04')
+            mask = region_mask(hdu,1.5)
+            fits.writeto(path+'/'+color+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
+            bar1.update(i)
+        ray.get([mask.remote(file, i) for i in range(len(file))])
+        bar1.finish()
+        ray.shutdown()
+
     def dark_sky_flat(path, color):
-        flat_file = Fits(path + '/'+color).path
+        flat_file = glob.glob(path + '/'+color+'/*.fits')
+        mask_file = glob.glob(path+'/'+color+'/mask/*.fits')
         scale_list = []
         mode_list = []
         bar0 = progressbar.ProgressBar(maxval=len(flat_file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
         for i in range(len(flat_file)):
             flat_data = fits.open(flat_file[i])[0].data
-            db_subed = flat_data
-            masked = Masking.se_mask(db_subed)
+            mask = fits.open(mask_file[i])[0].data 
+            db_subed = flat_data.astype(np.float32)
+            masked = np.where(mask!=0, np.nan, flat_data)
             mode1 = mode(masked[~np.isnan(masked)])[0]
             scaled_data = (masked - mode1)/mode1
-            scale_list.append(scaled_data)
+            scale_list.append(scaled_data.astype(np.float32))
             mode_list.append(mode1)
             bar0.update(i)
         mode_tot = np.array(mode_list)
         mean, median, std = sigma_clipped_stats(mode_tot, cenfunc='median', stdfunc='mad_std', sigma=3)
         mode0 = median
-        flat_arr = np.array(scale_list)
+        flat_arr = np.array(scale_list, dtype=np.float32)
         bar0.finish()
-        scaled_flat = np.array(Combine.nanmedian_comb(flat_arr))
+        scaled_flat = np.array(Combine.nanmedian_comb(flat_arr), dtype=np.float32)
         master_flat = scaled_flat * mode0 + mode0
-        fits.writeto(path + '/process/master_flat_'+color+'.fits', master_flat, overwrite=True)
+        fits.writeto(path + '/process/master_flat_'+color+'.fits', master_flat.astype(np.float32), overwrite=True)
         #return master_flat
 
     def dome_flat(path, color):
@@ -132,16 +150,16 @@ def flat_corr(path, obj_name, color):
         n = format(i, '04')
         l_hdu = fits.open(file[i])[0].data
         l_hdr = fits.open(file[i])[0].header
-        l_db = l_hdu
-        mean, median, std = sigma_clipped_stats(flat, cenfunc='median', stdfunc='mad_std', sigma=3)
-        l_final = l_db / (flat / median)
-        fits.writeto(path + '/'+color+'_pp/pp'+obj_name+str(n)+'_'+color+'.fits', l_final, header=l_hdr, overwrite=True)
+        f = flat.astype(np.float32)
+        mean, median, std = sigma_clipped_stats(f, cenfunc='median', stdfunc='mad_std', sigma=3)
+        l_final = l_hdu.astype(np.float32) / (f / median)
+        fits.writeto(path + '/'+color+'_pp/pp'+obj_name+str(n)+'_'+color+'.fits', l_final.astype(np.float32), header=l_hdr, overwrite=True)
         bar1.update(i)
     bar1.finish()
 
 def astrometry(path, obj_name, ra, dec, radius):
     file = open(path+'/'+obj_name+'.sh', 'w')
-    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved')
+    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved\nulimit -n 4096')
     file.close()
 
 from convert_fits import convert_fits
@@ -150,6 +168,7 @@ def split_rgb(path, obj_name):
     convert_fits.split_rgb_multi(path, obj_name)
 
 import time
+from sky_sub_color import sky_sub
 def process(path, obj_name):
     start_time = time.time()
     Fits.mkdir(path, '/process')
@@ -158,9 +177,39 @@ def process(path, obj_name):
     convert_fits.split_rgb_multi(path, obj_name)
     color_list = ['r', 'g', 'b']
     for i in color_list:
+        Master.masking(path, i)
         Master.dark_sky_flat(path, i)
         flat_corr(path, obj_name, i)
+        sky_sub(path, obj_name, i)
     end_time = time.time()
     print(f'{end_time - start_time} seconds') 
 
-process('/volumes/ssd/2025-06-27', 'Abell1656')
+def binning(data, bin):
+    img_height, img_width = data.shape
+
+    newImage = np.zeros((bin,bin), dtype=np.float32)
+
+    new_height = img_height//bin
+    new_width = img_width//bin
+    """
+    binning
+    """
+    for j in range(bin):
+        for i in range(bin):
+            y = j*new_height
+            x = i*new_width
+            pixel = data[y:y+new_height, x:x+new_width]
+            newImage[j,i] = np.nanmedian(pixel).astype(np.float32)
+    return newImage.astype(np.float32)
+
+#process('/volumes/ssd/NGC5907/2', 'NGC5907')
+import ray
+file = glob.glob('/volumes/ssd/NGC5907/1/r_pp/pp*.fits')
+@ray.remote
+def bin(file, i):
+    n = format(i, '04')
+    hdu = fits.open(file[i])[0].data 
+    b_hdu = binning(hdu, 1504)
+    fits.writeto('/volumes/ssd/NGC5907/1/r_pp/binned_NGC5907'+str(n)+'.fits', b_hdu, overwrite=True)
+
+#ray.get([bin.remote(file, i) for i in range(len(file))])

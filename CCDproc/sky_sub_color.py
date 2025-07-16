@@ -99,13 +99,13 @@ def sub(data, sky):
 
 import progressbar
 
-def sky_sub(path, obj_name):
+def sky_sub(path, obj_name, color):
       import glob
       import os
       if not os.path.exists(path + '/sky_subed'):
-        os.mkdir(path + '/sky_subed')
-      p = glob.glob(path + '/pp/pp*.fits')
-      m = glob.glob(path + '/mask/*.fits')
+        os.mkdir(path + '/sky_subed_'+color)
+      p = glob.glob(path + '/'+color+'_pp/pp*.fits')
+      m = glob.glob(path + '/'+color+'/mask/*.fits')
       bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
       for i in range(len(p)):
         n = format(i, '04')
@@ -118,7 +118,7 @@ def sky_sub(path, obj_name):
         sky = sky_model(data1, 64).astype(np.float32)
         subed = (data - sky).astype(np.float32)
         hdr.append(('sky_sub', 'Python', 'sky subtraction' ))
-        fits.writeto(path +'/sky_subed/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
+        fits.writeto(path +'/sky_subed_'+color+'/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
         bar1.update(i)
       bar1.finish()
         
@@ -166,7 +166,7 @@ def save_model(path):
      sky = sky_model(masked, 64)
      fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg.fits', sky, overwrite=True)
 
-#sky_sub('/volumes/ssd/intern/25_summer/M101_L', 'M101')
+#sky_sub('/volumes/ssd/NGC5907/1', 'NGC5907', 'b')
 #astrometry('/volumes/ssd/intern/25_summer/NGC891_r/sky_subed','NGC891','02:22:32.9','+42:20:54.0','1.5')
 #save_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits')
 #save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
