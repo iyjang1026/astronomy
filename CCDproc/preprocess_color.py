@@ -212,4 +212,4 @@ def bin(file, i):
     b_hdu = binning(hdu, 1504)
     fits.writeto('/volumes/ssd/NGC5907/1/r_pp/binned_NGC5907'+str(n)+'.fits', b_hdu, overwrite=True)
 
-#ray.get([bin.remote(file, i) for i in range(len(file))])
+#ray.get([bin.remote(file, i) for i in range(len(file))]); ray.shutdown()

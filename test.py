@@ -129,7 +129,7 @@ def coadd_mask(path):
     masked = np.where(mask_samp!=0, np.nan, hdu0)
     median = np.nanmedian(masked)
     std = np.nanstd(masked)
-    fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_masked_rm_rm_coadd.fits', masked, overwrite=True)
+    fits.writeto('/volumes/ssd/intern/25_summer/M101_L/tset_nan0_coadd.fits', masked, overwrite=True)
     plt.imshow(masked, vmax=median+3*std, vmin=median-3*std, origin='lower')
     plt.show()
     
@@ -155,15 +155,15 @@ def img_show(path):
 def fig():
     path = '/volumes/ssd/intern/25_summer/M101_L'
     fig, axes = plt.subplots(1,2)
-    file = glob.glob(path + '/pp_masked_nrm*.fits')
+    file = glob.glob(path + '/pp_masked_nrm_coadd*.fits')
     for i in range(len(file)):
         hdu = fits.open(file[i])[0].data 
         mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
         axes[i].imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower')
-        if file[i] == path +'/pp_masked_nrm.fits':
-            title = 'Single Image'
+        if file[i] == path +'/pp_masked_nrm_coadd.fits':
+            title = 'Previous masking Coadd Image'
         else:
-            title = 'Coadd Image'
+            title = 'New masking Coadd Image'
         axes[i].set_title(title)
         axes[i].set_xlabel('x')
         axes[i].set_ylabel('y')
@@ -190,20 +190,22 @@ def std(arr):
     std_arr = np.array(std_list)
     mean, median, std = sigma_clipped_stats(std_arr, cenfunc='median', stdfunc='mad_std', sigma=3)
     end_time = time.time()
+    ray.shutdown()
     eta = end_time - st_time
     print(median,f'{eta//60}mins {eta-(eta//60)}seconds')
 #coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_sub/coadd.fits')
 #hist('/volumes/ssd/intern/25_summer/M101_L')
 #image_plot('/volumes/ssd/intern/25_summer/M101_L/')
 #residual('/volumes/ssd/intern/25_summer/M101_L/process')
-#coadd_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed_rm_rm/coadd.fits')
+#coadd_mask('/volumes/ssd/intern/25_summer/test_nan0.fits')
 #img_show('/volumes/ssd/intern/25_summer/M101_L')
-"""
+#fig()
 import warnings
 warnings.filterwarnings('ignore')
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_masked_rm_rm_coadd.fits')[0].data 
-std(hdu)
 
+hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_masked_nrm.fits')[0].data 
+std(hdu)
+"""
 hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data 
 mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
 plt.imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower', cmap='grey')
