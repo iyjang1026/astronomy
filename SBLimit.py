@@ -32,10 +32,10 @@ std_noise = se_mask('/volumes/ssd/intern/25_summer/M51_L/sky_subed/coadd.fits')
 
 def sb_limit():
     #read catalogue
-    source = '/volumes/ssd/intern/25_summer/M51_L/sky_subed/coadd.cat'
+    source = '/volumes/ssd/2025-07-20/sky_subed_r/coadd.cat'
     data = Table.read(source, format='ascii', converters={'obsid':str})
     #check the catalogue location
-    sdss = Table.read('/Users/jang-in-yeong/Desktop/sdss_m51.csv', format='ascii') #check!!
+    sdss = Table.read('/Users/jang-in-yeong/Downloads/sdss_m13.csv', format='ascii') #check!!
 
     #extract coordinate
     sdsscat = sdss['ra', 'dec', 'g','r']

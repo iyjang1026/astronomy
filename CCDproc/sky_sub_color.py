@@ -102,8 +102,8 @@ import progressbar
 def sky_sub(path, obj_name, color):
       import glob
       import os
-      if not os.path.exists(path + '/sky_subed'):
-        os.mkdir(path + '/sky_subed_'+color)
+      #if not os.path.exists(path + '/sky_subed'):
+        #os.mkdir(path + '/sky_subed_'+color)
       p = glob.glob(path + '/'+color+'_pp/pp*.fits')
       m = glob.glob(path + '/'+color+'/mask/*.fits')
       bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
@@ -118,14 +118,14 @@ def sky_sub(path, obj_name, color):
         sky = sky_model(data1, 64).astype(np.float32)
         subed = (data - sky).astype(np.float32)
         hdr.append(('sky_sub', 'Python', 'sky subtraction' ))
-        fits.writeto(path +'/sky_subed_'+color+'/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
+        fits.writeto(path +'/sky_subed_'+color+'/pp' + obj_name + str(n)+'_'+color+'.fits',subed , header=hdr, overwrite=True)
         bar1.update(i)
       bar1.finish()
         
       
 def astrometry(path, obj_name, ra, dec, radius):
     file = open(path+'/'+obj_name+'.sh', 'w')
-    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved\nulimit -n 4096')
+    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved')
     file.close()
 
 warnings.filterwarnings('ignore')
@@ -167,7 +167,7 @@ def save_model(path):
      fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg.fits', sky, overwrite=True)
 
 #sky_sub('/volumes/ssd/NGC5907/1', 'NGC5907', 'b')
-#astrometry('/volumes/ssd/intern/25_summer/NGC891_r/sky_subed','NGC891','02:22:32.9','+42:20:54.0','1.5')
+#astrometry('/volumes/ssd/2025-07-20','M13','16:41:41.6','+36:27:47.8','1.5')
 #save_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits')
 #save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
 #model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')

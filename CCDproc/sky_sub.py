@@ -72,7 +72,7 @@ def sky_model(data, bin):
                 y = j*new_height
                 x = i*new_width
                 pixel = data[y:y+new_height, x:x+new_width]
-                newImage[j,i] = np.median(pixel[~np.isnan(pixel)])
+                newImage[j,i] = np.nanmedian(pixel) #np.median(pixel[~np.isnan(pixel)])
                 
         """
         calculate matrix x and y, these are positon component or img
@@ -105,17 +105,17 @@ def sky_sub(path, obj_name):
       if not os.path.exists(path + '/sky_subed'):
         os.mkdir(path + '/sky_subed')
       p = glob.glob(path + '/pp/pp*.fits')
-      m = glob.glob(path + '/mask/*.fits')
+      #m = glob.glob(path + '/mask/*.fits')
       bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
       for i in range(len(p)):
         n = format(i, '04')
         input = p[i]
-        mask_i = m[i]
+        #mask_i = m[i]
         hdr = fits.open(input)[0].header
         data = fits.open(input)[0].data
-        mask = fits.open(mask_i)[0].data
-        data1 = np.where(mask!=0,np.nan, data)
-        sky = sky_model(data1, 64).astype(np.float32)
+        mask = region_mask(data,1.5, 0.9) #fits.open(mask_i)[0].data #
+        m_data = np.where(mask!=0,np.nan, data)
+        sky = sky_model(m_data, 64).astype(np.float32)
         subed = (data - sky).astype(np.float32)
         hdr.append(('sky_sub', 'Python', 'sky subtraction' ))
         fits.writeto(path +'/sky_subed/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
@@ -132,9 +132,9 @@ warnings.filterwarnings('ignore')
 
 def model_plot(path):
      hdu = fits.open(path)[0].data 
-     mask = region_mask(hdu, 1.5)
+     mask = region_mask(hdu, 3.0)#fits.open('/volumes/ssd/intern/25_summer/M101_L/mask/mask0000.fits')[0].data
      masked = np.where(mask!=0, np.nan, hdu)
-     sky = sky_model(masked, 32,2)
+     sky = sky_model(masked, 64)
      plt.imshow(sky, cmap='grey', origin='lower')
      plt.colorbar()
      plt.xlabel('x')

@@ -172,14 +172,14 @@ from sky_sub_color import sky_sub
 def process(path, obj_name):
     start_time = time.time()
     Fits.mkdir(path, '/process')
-    db_sub(path, obj_name)
-    convert_fits.debayer_RGGB_multi(path)
-    convert_fits.split_rgb_multi(path, obj_name)
+    #db_sub(path, obj_name)
+    #convert_fits.debayer_RGGB_multi(path)
+    #convert_fits.split_rgb_multi(path, obj_name)
     color_list = ['r', 'g', 'b']
     for i in color_list:
-        Master.masking(path, i)
-        Master.dark_sky_flat(path, i)
-        flat_corr(path, obj_name, i)
+        #Master.masking(path, i)
+        #Master.dark_sky_flat(path, i)
+        #flat_corr(path, obj_name, i)
         sky_sub(path, obj_name, i)
     end_time = time.time()
     print(f'{end_time - start_time} seconds') 
@@ -194,15 +194,18 @@ def binning(data, bin):
     """
     binning
     """
+    data.reshape((1504,2,1504,2)).mean(1).mean(-1)
+    """
     for j in range(bin):
         for i in range(bin):
             y = j*new_height
             x = i*new_width
             pixel = data[y:y+new_height, x:x+new_width]
             newImage[j,i] = np.nanmedian(pixel).astype(np.float32)
-    return newImage.astype(np.float32)
+    """
+    return data.astype(np.float32) #newImage.astype(np.float32)
 
-#process('/volumes/ssd/NGC5907/2', 'NGC5907')
+process('/volumes/ssd/2025-07-20', 'M13')
 import ray
 file = glob.glob('/volumes/ssd/NGC5907/1/r_pp/pp*.fits')
 @ray.remote

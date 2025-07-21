@@ -7,7 +7,7 @@ from astropy.modeling import models, fitting
 from astropy.stats import sigma_clipped_stats
 import glob
 import sys
-from mask import region_mask
+from mask1 import region_mask
 def coadd_plot(path):
     hdul = fits.open(path)
     hdu = hdul[0].data 
@@ -203,8 +203,8 @@ def std(arr):
 import warnings
 warnings.filterwarnings('ignore')
 
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_masked_nrm.fits')[0].data 
-std(hdu)
+#hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_masked_nrm.fits')[0].data 
+#std(hdu)
 """
 hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data 
 mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)

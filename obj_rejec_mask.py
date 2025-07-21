@@ -3,57 +3,44 @@ from matplotlib import pyplot as plt
 from astropy.io import fits
 from astropy.convolution import convolve
 from astropy.stats import sigma_clipped_stats
-from photutils.segmentation import detect_sources, make_2dgaussian_kernel, SourceCatalog, deblend_sources
+from photutils.segmentation import detect_sources, make_2dgaussian_kernel, SourceCatalog, deblend_sources, SegmentationImage
 from photutils.background import MedianBackground, Background2D
 from photutils.aperture import EllipticalAperture
 from scipy.ndimage import binary_dilation
 from skimage.morphology import disk
 import sys
-import sep
-def se_mask(arr):
-        data = np.array(arr)
-        data1 = data.astype(data.dtype.newbyteorder('='))
-        bkg = sep.Background(data1)
-        subd = data - bkg
-        obj, seg_map = sep.extract(subd, 1.5*bkg.globalrms, segmentation_map=True)
-        mask_map = np.array(seg_map)
-        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
-        mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
-        masked = np.where((mask_map_d!=0), np.nan, data)
-        return masked.astype(np.float32)
-    
-def masking(arr):
-    bkg_estimator = MedianBackground()
-    bkg = Background2D(arr, (64,64), filter_size=(3,3), bkg_estimator=bkg_estimator)
-    data = arr - bkg.background
-    threshold = 3 * bkg.background_rms
-    kernel = make_2dgaussian_kernel(3.0, size=5)
-    convolved_data = convolve(data, kernel)
-    seg_map = detect_sources(convolved_data, threshold, npixels=10)
-    mask_map = np.array(seg_map)
-    kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
-    mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
-    masked = np.where((mask_map_d!=0), np.nan, arr)
-    return masked.astype(np.float32)
 
-def region_mask(hdu, thrsh, eps_thr):
-    #mask = np.where(hdu!=0, False, True)
+def region_mask(hdu, thrsh):
+    mask1 = np.where(hdu!=0, False, True)
     bkg_est = MedianBackground()
-    bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est)
+    bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est, mask=mask1)
     data = hdu - bkg.background
     threshold = thrsh*bkg.background_rms
     kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
     conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=5)
+    seg_map = detect_sources(conv_hdu, threshold, npixels=5, mask=mask1)
     segm_deblend = deblend_sources(conv_hdu, seg_map,
-                               npixels=80, nlevels=32, contrast=0.001,
+                               npixels=10, nlevels=32, contrast=0.0005,
                                progress_bar=False)
-    seg = np.array(seg_map)
-    
-    cat = SourceCatalog(data, segm_deblend, convolved_data=conv_hdu)
+
+    segm_d = np.array(segm_deblend).astype(np.int16)
+
+    arr = segm_d[1050:2000,1200:2000]
+    seg_img = SegmentationImage(arr)
+    labels = [x for x in seg_img.labels if x>=8480]
+    seg_img.remove_labels(labels)
+    segm_d_crop = np.array(seg_img)
+    segm_d[1050:2000,1200:2000] = segm_d_crop
+    segm = SegmentationImage(segm_d)
+    #plt.imshow(segm, origin='lower')
+    #plt.show()
+    #sys.exit()
+    cat = SourceCatalog(segm, segm, convolved_data=conv_hdu)
     
     
     ap = cat.kron_aperture
+    #print(ap)
+    #sys.exit()
     l = [x for x in ap if x!=None]
     a_list = []
     for i in l:
@@ -63,7 +50,7 @@ def region_mask(hdu, thrsh, eps_thr):
         a = i.a
         b = i.b
         eps = np.sqrt(1-(b/a)**2)
-        if eps > eps_thr:
+        if eps > 0.8:
             a_list.append(0)
         else:
             a_list.append(b)
@@ -72,7 +59,7 @@ def region_mask(hdu, thrsh, eps_thr):
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-25:]
+    tmp_num = tmp[-20:]
     top_idx = [a_list.index(x) for x in tmp_num]
     #plt.imshow(hdu, origin='lower')
     for i in top_idx:
@@ -82,7 +69,7 @@ def region_mask(hdu, thrsh, eps_thr):
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
+        aperture = EllipticalAperture(xy, 2*a, 2*b, theta=theta)
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
         #aperture.plot(color='C3')
         mask_x, mask_y = mask.shape
@@ -119,28 +106,27 @@ def region_mask(hdu, thrsh, eps_thr):
         m_x, m_y = mask.shape #crop mask
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     
-    masked_map = np.where(seg!=0, 1, 0) + arr_zero
-    half = disk(100)
-    masked_map[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
+    masked_map = np.where(segm_d!=0, 1, 0) + arr_zero
     seg_d = np.where(masked_map!=0, 1, 0).astype(np.int8)
     kernel0 = disk(3) 
-    masked = binary_dilation(seg_d, kernel0, iterations=3)
+    masked = binary_dilation(seg_d, kernel0, iterations=1)
     return np.array(masked, dtype=np.int8)
 
-"""
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_obj/ppM101_0001.fit')[0].data
-x,y = hdu.shape
-mask = region_mask(hdu,1.5, 0.99)
+
+hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data
+#mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits')[0].data
+#x,y = hdu.shape
+mask = region_mask(hdu,1.5)
+plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
-#fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_mask_nrm_test_coadd.fits', map, overwrite=True)
+#fits.writeto('/volumes/ssd/2025-07-20/pp_mask_r_coadd.fits', map, overwrite=True)
 #map1 = np.where(map==0,np.nan, map)
+#plt.imshow(mask, origin='lower')
+#plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,
 median = np.nanmedian(map)
 std = np.nanstd(map)
-plt.imshow(map,vmax=median+3*std, vmin=median-3*std, origin='lower')
-#plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,
-#plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
+plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
 #plt.imshow(map[int(x/2-1300):int(x/2+1300),int(y/2-1300):int(y/2+1300)],vmax=median+3*std, vmin=median-3*std,
- #           origin='lower')
-plt.colorbar()
+            #origin='lower')
+#plt.colorbar()
 plt.show()
-"""

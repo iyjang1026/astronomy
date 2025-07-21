@@ -61,7 +61,7 @@ class Master(Fits):
         def mask(file, i):
             hdu = fits.open(file[i])[0].data 
             n = format(i, '04')
-            mask = region_mask(hdu,1.5)
+            mask = region_mask(hdu,1.5, 0.9)
             fits.writeto(path+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
             bar1.update(i)
         ray.get([mask.remote(file, i) for i in range(len(file))])
@@ -90,8 +90,9 @@ class Master(Fits):
             mask = fits.open(mask_file[i])[0].data
             masked = np.where(mask==1,np.nan,flat_data)
             mode1 = mode(masked[~np.isnan(masked)])[0]
-            scaled_data = np.array((masked - mode1)/mode1).astype(np.float32)
-            scale_list.append(scaled_data)
+            median = np.nanmedian(masked)
+            scaled_data = np.array((masked - mode1)/mode1)
+            scale_list.append(scaled_data.astype(np.float32))
             mode_list.append(mode1)
             hdul.close()
             bar0.update(i)
@@ -164,16 +165,13 @@ def astrometry(path, obj_name, ra, dec, radius):
     file.close()
 
 import time
-import multiprocessing
-from multiprocessing import Process
 def process(path, obj_name):
-    multiprocessing.freeze_support()
     start_time = time.time()
-    #Fits.mkdir(path, '/process')
-    #db_sub(path, obj_name)
+    Fits.mkdir(path, '/process')
+    db_sub(path, obj_name)
     Master.masking(path)
-    #Master.dark_sky_flat(path)
-    #flat_corr(path, obj_name)
+    Master.dark_sky_flat(path)
+    flat_corr(path, obj_name)
     end_time = time.time()
     eta = end_time - start_time
     print(f'{eta//60} min {eta-(eta//60)*60} seconds')
@@ -181,8 +179,8 @@ def process(path, obj_name):
 from sky_sub import sky_sub
 
 def full_proc(path, obj_name):
-    process(path, obj_name)
-    #sky_sub(path, obj_name)
+    #process(path, obj_name)
+    sky_sub(path, obj_name)
 
 if __name__ == '__main__':
     #process('/volumes/ssd/intern/25_summer/NGC4236_r', 'NGC4236')
