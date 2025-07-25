@@ -9,7 +9,7 @@ from scipy.stats import mode
 import os
 import warnings
 from photutils.segmentation import detect_threshold
-from mask import region_mask
+from mask1 import region_mask
 
 warnings.filterwarnings('ignore')
 
@@ -79,7 +79,7 @@ class Master(Fits):
         def mask(file, i):
             hdu = fits.open(file[i])[0].data 
             n = format(i, '04')
-            mask = region_mask(hdu,1.5)
+            mask = region_mask(hdu,1.5, 0.8)
             fits.writeto(path+'/'+color+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
             bar1.update(i)
         ray.get([mask.remote(file, i) for i in range(len(file))])
@@ -171,15 +171,15 @@ import time
 from sky_sub_color import sky_sub
 def process(path, obj_name):
     start_time = time.time()
-    Fits.mkdir(path, '/process')
+    #Fits.mkdir(path, '/process')
     #db_sub(path, obj_name)
     #convert_fits.debayer_RGGB_multi(path)
     #convert_fits.split_rgb_multi(path, obj_name)
     color_list = ['r', 'g', 'b']
     for i in color_list:
-        #Master.masking(path, i)
-        #Master.dark_sky_flat(path, i)
-        #flat_corr(path, obj_name, i)
+        Master.masking(path, i)
+        Master.dark_sky_flat(path, i)
+        flat_corr(path, obj_name, i)
         sky_sub(path, obj_name, i)
     end_time = time.time()
     print(f'{end_time - start_time} seconds') 
@@ -205,7 +205,7 @@ def binning(data, bin):
     """
     return data.astype(np.float32) #newImage.astype(np.float32)
 
-process('/volumes/ssd/2025-07-20', 'M13')
+process('/volumes/ssd/2025-07-22', 'M13')
 import ray
 file = glob.glob('/volumes/ssd/NGC5907/1/r_pp/pp*.fits')
 @ray.remote

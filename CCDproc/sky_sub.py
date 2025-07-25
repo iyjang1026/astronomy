@@ -102,8 +102,8 @@ import progressbar
 def sky_sub(path, obj_name):
       import glob
       import os
-      if not os.path.exists(path + '/sky_subed'):
-        os.mkdir(path + '/sky_subed')
+      if not os.path.exists(path + '/sky_subed1'):
+        os.mkdir(path + '/sky_subed1')
       p = glob.glob(path + '/pp/pp*.fits')
       #m = glob.glob(path + '/mask/*.fits')
       bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
@@ -113,12 +113,12 @@ def sky_sub(path, obj_name):
         #mask_i = m[i]
         hdr = fits.open(input)[0].header
         data = fits.open(input)[0].data
-        mask = region_mask(data,1.5, 0.9) #fits.open(mask_i)[0].data #
+        mask =  region_mask(data,1.5, 0.9) #fits.open(mask_i)[0].data #
         m_data = np.where(mask!=0,np.nan, data)
         sky = sky_model(m_data, 64).astype(np.float32)
         subed = (data - sky).astype(np.float32)
         hdr.append(('sky_sub', 'Python', 'sky subtraction' ))
-        fits.writeto(path +'/sky_subed/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
+        fits.writeto(path +'/sky_subed1/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
         bar1.update(i)
       bar1.finish()
         
@@ -132,7 +132,7 @@ warnings.filterwarnings('ignore')
 
 def model_plot(path):
      hdu = fits.open(path)[0].data 
-     mask = region_mask(hdu, 3.0)#fits.open('/volumes/ssd/intern/25_summer/M101_L/mask/mask0000.fits')[0].data
+     mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask/mask0024.fits')[0].data #region_mask(hdu, 1.5, 0.9)#
      masked = np.where(mask!=0, np.nan, hdu)
      sky = sky_model(masked, 64)
      plt.imshow(sky, cmap='grey', origin='lower')
@@ -144,7 +144,7 @@ def model_plot(path):
 
 def mask_plot(path):
      hdu = fits.open(path)[0].data
-     mask = region_mask(hdu, 1.5)
+     mask = region_mask(hdu, 1.5, 0.8)
      masked = np.where(mask!=0,np.nan, hdu)
      median = np.nanmedian(masked)
      std = np.nanstd(masked)
@@ -157,18 +157,21 @@ def mask_plot(path):
 
 def save_mask(path):
      hdu = fits.open(path)[0].data
-     mask = region_mask(hdu,1.5)
-     masked = np.where(mask!=0, np.nan, hdu)
-     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_masked_nrm.fits', masked, overwrite=True)
+     mask = region_mask(hdu,1.5, 0.9)
+     #masked = np.where(mask!=0, np.nan, hdu)
+     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/mask1.fits', mask, overwrite=True)
 
 def save_model(path):
-     masked = se_mask(path)
+     hdu = fits.open(path)[0].data
+     m_hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_obj/ppM101_0024.fit')[0].data
+     mask = region_mask(m_hdu, 1.5, 0.8)#fits.open('/volumes/ssd/intern/25_summer/M101_L/mask/mask0024.fits')[0].data #
+     masked = np.where(mask!=0, np.nan, hdu)
      sky = sky_model(masked, 64)
-     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg.fits', sky, overwrite=True)
+     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg_3.fits', sky, overwrite=True)
 
 #sky_sub('/volumes/ssd/intern/25_summer/M101_L', 'M101')
 #astrometry('/volumes/ssd/intern/25_summer/NGC891_r/sky_subed','NGC891','02:22:32.9','+42:20:54.0','1.5')
-#save_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits')
-#save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
-#model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
-#mask_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0024.fits')
+#save_mask('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0024.fits')
+#save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0024.fits')
+#model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0024.fits')
+#mask_plot('/volumes/ssd/intern/25_summer/M101_L/pp_obj/ppM101_0024.fit')

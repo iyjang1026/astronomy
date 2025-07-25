@@ -18,19 +18,19 @@ def region_mask(hdu, thrsh):
     threshold = thrsh*bkg.background_rms
     kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
     conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=5, mask=mask1)
+    seg_map = detect_sources(conv_hdu, threshold, npixels=5, mask=mask1) #1차 천체 탐지
     segm_deblend = deblend_sources(conv_hdu, seg_map,
                                npixels=10, nlevels=32, contrast=0.0005,
-                               progress_bar=False)
+                               progress_bar=False) #천체분리
 
     segm_d = np.array(segm_deblend).astype(np.int16)
 
-    arr = segm_d[1050:2000,1200:2000]
+    arr = segm_d[1050:2000,1200:2000] #중앙부 크롭
     seg_img = SegmentationImage(arr)
-    labels = [x for x in seg_img.labels if x>=8480]
-    seg_img.remove_labels(labels)
+    labels = [x for x in seg_img.labels if x>=8480] #M 101에 해당하는 값을 가진 label의 리스트
+    seg_img.remove_labels(labels) #M 101의 segmentation 제거
     segm_d_crop = np.array(seg_img)
-    segm_d[1050:2000,1200:2000] = segm_d_crop
+    segm_d[1050:2000,1200:2000] = segm_d_crop #합성
     segm = SegmentationImage(segm_d)
     #plt.imshow(segm, origin='lower')
     #plt.show()
@@ -50,7 +50,7 @@ def region_mask(hdu, thrsh):
         a = i.a
         b = i.b
         eps = np.sqrt(1-(b/a)**2)
-        if eps > 0.8:
+        if eps > 0.99:
             a_list.append(0)
         else:
             a_list.append(b)
@@ -69,7 +69,7 @@ def region_mask(hdu, thrsh):
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 2*a, 2*b, theta=theta)
+        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
         #aperture.plot(color='C3')
         mask_x, mask_y = mask.shape
@@ -112,14 +112,16 @@ def region_mask(hdu, thrsh):
     masked = binary_dilation(seg_d, kernel0, iterations=1)
     return np.array(masked, dtype=np.int8)
 
+import warnings
 
+warnings.filterwarnings('ignore')
 hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data
 #mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits')[0].data
 #x,y = hdu.shape
 mask = region_mask(hdu,1.5)
 plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
-#fits.writeto('/volumes/ssd/2025-07-20/pp_mask_r_coadd.fits', map, overwrite=True)
+#fits.writeto('/volumes/ssd/intern/25_summer/M101_L/obj_rejec_coadd.fits', mask, overwrite=True)
 #map1 = np.where(map==0,np.nan, map)
 #plt.imshow(mask, origin='lower')
 #plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,

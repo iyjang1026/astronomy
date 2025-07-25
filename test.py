@@ -193,12 +193,34 @@ def std(arr):
     ray.shutdown()
     eta = end_time - st_time
     print(median,f'{eta//60}mins {eta-(eta//60)}seconds')
-#coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_sub/coadd.fits')
+
+def model_diff():
+    hdu1 = fits.open('/volumes/ssd/intern/25_summer/M101_L/bkg_1.fits')[0].data 
+    hdu2 = fits.open('/volumes/ssd/intern/25_summer/M101_L/bkg_2.fits')[0].data 
+    fig, axes = plt.subplots(1,3)
+    axes[0].imshow(hdu1, origin='lower')
+    axes[0].set_title('use mask the DB subed')
+    axes[1].imshow(hdu2, origin='lower')
+    axes[1].set_title('use mask the pp')
+    diff = axes[2].imshow(hdu2-hdu1,cmap='grey', origin='lower')
+    axes[2].set_title('pp-dbsubed')
+    plt.colorbar(diff, ax=axes[2])
+    plt.show()
+
+def model_subed(path):
+    hdu = fits.open(path+'/sky_subed/coadd.fits')[0].data
+    model = fits.open(path+'/model.fits')[0].data 
+    mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
+    plt.imshow(hdu-model,vmax=median+3*std, vmin=median-3*std, origin='lower')
+    plt.show()
+coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')
 #hist('/volumes/ssd/intern/25_summer/M101_L')
 #image_plot('/volumes/ssd/intern/25_summer/M101_L/')
 #residual('/volumes/ssd/intern/25_summer/M101_L/process')
 #coadd_mask('/volumes/ssd/intern/25_summer/test_nan0.fits')
 #img_show('/volumes/ssd/intern/25_summer/M101_L')
+#model_diff()
+#model_subed('/volumes/ssd/intern/25_summer/M101_L')
 #fig()
 import warnings
 warnings.filterwarnings('ignore')

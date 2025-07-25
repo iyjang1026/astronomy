@@ -11,8 +11,7 @@ import astropy.io.fits as fits
 from astropy.stats import sigma_clipped_stats
 import sep
 from scipy.ndimage import binary_dilation
-from mask import region_mask
-
+from mask1 import region_mask
 def mask(single_name):
         data1 = fits.open(single_name)[0].data
         bkg_estimator = MedianBackground()
@@ -102,8 +101,8 @@ import progressbar
 def sky_sub(path, obj_name, color):
       import glob
       import os
-      #if not os.path.exists(path + '/sky_subed'):
-        #os.mkdir(path + '/sky_subed_'+color)
+      if not os.path.exists(path + '/sky_subed'):
+        os.mkdir(path + '/sky_subed_'+color)
       p = glob.glob(path + '/'+color+'_pp/pp*.fits')
       m = glob.glob(path + '/'+color+'/mask/*.fits')
       bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
@@ -167,7 +166,7 @@ def save_model(path):
      fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg.fits', sky, overwrite=True)
 
 #sky_sub('/volumes/ssd/NGC5907/1', 'NGC5907', 'b')
-#astrometry('/volumes/ssd/2025-07-20','M13','16:41:41.6','+36:27:47.8','1.5')
+astrometry('/volumes/ssd/2025-07-22','M13','16:41:41.6','+36:27:47.8','1.5')
 #save_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits')
 #save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
 #model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')

@@ -72,7 +72,7 @@ def region_mask(hdu, thrsh, eps_thr):
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-25:]
+    tmp_num = tmp[-20:]
     top_idx = [a_list.index(x) for x in tmp_num]
     #plt.imshow(hdu, origin='lower')
     for i in top_idx:

@@ -36,7 +36,7 @@ def masking(arr):
     masked = np.where((mask_map_d!=0), np.nan, arr)
     return masked.astype(np.float32)
 
-def region_mask(hdu, thrsh):
+def region_mask(hdu, thrsh, eps_thr):
     mask = np.where(hdu!=0, False, True)
     bkg_est = MedianBackground()
     bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est, mask=mask)
@@ -62,7 +62,7 @@ def region_mask(hdu, thrsh):
         a = i.a
         b = i.b
         eps = np.sqrt(1-(b/a)**2)
-        if eps > 0.8:
+        if eps > eps_thr:
             a_list.append(0)
         else:
             a_list.append(b)
@@ -119,14 +119,12 @@ def region_mask(hdu, thrsh):
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     
     masked_map = np.where(seg!=0, 1, 0) + arr_zero
-    #half = disk(100)
-    #masked_map[2048-100:2048,1212-100-1:1212+100] = half[0:100,:]
     seg_d = np.where(masked_map!=0, 1, 0).astype(np.int8)
     kernel0 = disk(3) 
     masked = binary_dilation(seg_d, kernel0, iterations=3)
     return np.array(masked, dtype=np.int8)
 
-
+"""
 hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data
 #x,y = hdu.shape
 mask = region_mask(hdu,1.5)
@@ -140,3 +138,4 @@ fits.writeto('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits', mask, overw
             #origin='lower')
 #plt.colorbar()
 plt.show()
+"""
