@@ -10,14 +10,16 @@ import sys
 from mask1 import region_mask
 def coadd_plot(path):
     hdul = fits.open(path)
-    hdu = hdul[0].data 
+    mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/obj_rejec_coadd.fits')[0].data
+    hdu0 = hdul[0].data 
+    hdu = np.ma.masked_where(mask, hdu0)
     hdr = hdul[0].header
     wcs = WCS(hdr)
     mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
     fig, ax = plt.subplots(subplot_kw=dict(projection=wcs))
-    ax.imshow(hdu, vmax=median+3*std, vmin=median-3*std, cmap='grey', origin='lower')
+    ax.imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower')
     ax.set(xlabel='R.A.', ylabel='Dec')
-    ax.set_title('sep masking flat, model processed')
+    ax.set_title('Object Rejection Masked Image')
     print(std)
     plt.show()
 
@@ -198,11 +200,13 @@ def model_diff():
     hdu1 = fits.open('/volumes/ssd/intern/25_summer/M101_L/bkg_1.fits')[0].data 
     hdu2 = fits.open('/volumes/ssd/intern/25_summer/M101_L/bkg_2.fits')[0].data 
     fig, axes = plt.subplots(1,3)
-    axes[0].imshow(hdu1, origin='lower')
+    model1 = axes[0].imshow(hdu1, origin='lower', cmap='rainbow')
     axes[0].set_title('use mask the DB subed')
-    axes[1].imshow(hdu2, origin='lower')
+    plt.colorbar(model1, ax=axes[0])
+    model2 = axes[1].imshow(hdu2, origin='lower', cmap='rainbow')
     axes[1].set_title('use mask the pp')
-    diff = axes[2].imshow(hdu2-hdu1,cmap='grey', origin='lower')
+    plt.colorbar(model2, ax=axes[1])
+    diff = axes[2].imshow(hdu2-hdu1, origin='lower')
     axes[2].set_title('pp-dbsubed')
     plt.colorbar(diff, ax=axes[2])
     plt.show()
@@ -213,7 +217,7 @@ def model_subed(path):
     mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
     plt.imshow(hdu-model,vmax=median+3*std, vmin=median-3*std, origin='lower')
     plt.show()
-coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')
+#coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')
 #hist('/volumes/ssd/intern/25_summer/M101_L')
 #image_plot('/volumes/ssd/intern/25_summer/M101_L/')
 #residual('/volumes/ssd/intern/25_summer/M101_L/process')

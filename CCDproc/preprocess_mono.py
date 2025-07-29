@@ -8,6 +8,9 @@ import os
 import warnings
 import weakref
 from mask import region_mask
+import sys
+import ray
+import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
 class Fits:
@@ -53,7 +56,6 @@ class Master(Fits):
         return master_dark.astype(np.float32)
     
     def masking(path):
-        import ray
         file = glob.glob(path +'/pp_obj/*.fit')
         Fits.mkdir(path, '/mask')
         bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
@@ -61,7 +63,7 @@ class Master(Fits):
         def mask(file, i):
             hdu = fits.open(file[i])[0].data 
             n = format(i, '04')
-            mask = region_mask(hdu,1.5, 0.9)
+            mask = region_mask(hdu,1.5, 0.8)
             fits.writeto(path+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
             bar1.update(i)
         ray.get([mask.remote(file, i) for i in range(len(file))])
@@ -90,7 +92,6 @@ class Master(Fits):
             mask = fits.open(mask_file[i])[0].data
             masked = np.where(mask==1,np.nan,flat_data)
             mode1 = mode(masked[~np.isnan(masked)])[0]
-            median = np.nanmedian(masked)
             scaled_data = np.array((masked - mode1)/mode1)
             scale_list.append(scaled_data.astype(np.float32))
             mode_list.append(mode1)
@@ -164,6 +165,26 @@ def astrometry(path, obj_name, ra, dec, radius):
     file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved')
     file.close()
 
+from sky_sub import sky_sub
+def sky_subd(path, obj_name):
+    if not os.path.exists(path + '/sky_subed2'):
+        os.mkdir(path + '/sky_subed2')
+    p = glob.glob(path + '/pp/pp*.fits')
+    #m = glob.glob(path + '/mask/*.fits')
+    bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
+    @ray.remote
+    def sky(p,i):
+        n = format(i, '04')
+        hdu = fits.open(p[i])[0].data 
+        hdr = fits.open(p[i])[0].header
+        #mask = fits.open(m[i])[0].data
+        subed, hdr = sky_sub(hdu,hdr)
+        fits.writeto(path +'/sky_subed2/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
+        bar1.update(i)
+    ray.get([sky.remote(p,i) for i in range(len(p))])
+    bar1.finish()
+    ray.shutdown()
+
 import time
 def process(path, obj_name):
     start_time = time.time()
@@ -176,14 +197,14 @@ def process(path, obj_name):
     eta = end_time - start_time
     print(f'{eta//60} min {eta-(eta//60)*60} seconds')
 
-from sky_sub import sky_sub
+
 
 def full_proc(path, obj_name):
-    #process(path, obj_name)
-    sky_sub(path, obj_name)
+    process(path, obj_name)
+    sky_subd(path, obj_name)
 
 if __name__ == '__main__':
-    #process('/volumes/ssd/intern/25_summer/NGC4236_r', 'NGC4236')
+    #process('/volumes/ssd/intern/25_summer/M101_L', 'M101')
     full_proc('/volumes/ssd/intern/25_summer/M101_L', 'M101')
     #astrometry('/volumes/ssd/intern/25_summer/M101_L/sky_subed','M101','14:03:12.6','+54:20:55.5','1.5')
 

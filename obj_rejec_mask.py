@@ -32,15 +32,9 @@ def region_mask(hdu, thrsh):
     segm_d_crop = np.array(seg_img)
     segm_d[1050:2000,1200:2000] = segm_d_crop #합성
     segm = SegmentationImage(segm_d)
-    #plt.imshow(segm, origin='lower')
-    #plt.show()
-    #sys.exit()
     cat = SourceCatalog(segm, segm, convolved_data=conv_hdu)
     
-    
-    ap = cat.kron_aperture
-    #print(ap)
-    #sys.exit()
+    ap = cat.kron_aperture #각 천제에 맞는 타원 생성
     l = [x for x in ap if x!=None]
     a_list = []
     for i in l:
@@ -59,9 +53,9 @@ def region_mask(hdu, thrsh):
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-20:]
+    tmp_num = tmp[-20:] #타원의 단반경 상위 20개 추출
     top_idx = [a_list.index(x) for x in tmp_num]
-    #plt.imshow(hdu, origin='lower')
+    
     for i in top_idx:
         g_aper = ap[i]
         a = g_aper.a
@@ -69,17 +63,16 @@ def region_mask(hdu, thrsh):
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
+        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta) #장반경과 단반경의 3.5배로 마스크 크기 설정
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
-        #aperture.plot(color='C3')
         mask_x, mask_y = mask.shape
     
-        st_x = np.int16(xy[1] - mask_x/2)
+        st_x = np.int16(xy[1] - mask_x/2) #마스크의 시작점
         st_y = np.int16(xy[0] - mask_y/2)
     
         x, y = hdu.shape
    
-        def lim(st, mask_s, arr_s):
+        def lim(st, mask_s, arr_s): #마스크를 자르는 조건문
             if st < 0 and st+mask_s<arr_s:
                 arr_st = 0
                 mask_st = -st
@@ -102,14 +95,14 @@ def region_mask(hdu, thrsh):
         
         arr_x, mask_s_x, mask_l_x = lim(st_x, mask_x, x)
         arr_y, mask_s_y, mask_l_y = lim(st_y, mask_y, y)
-        mask = mask[mask_s_x:mask_l_x,mask_s_y:mask_l_y] 
-        m_x, m_y = mask.shape #crop mask
-        arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
+        mask = mask[mask_s_x:mask_l_x,mask_s_y:mask_l_y] #마스크를 크롭
+        m_x, m_y = mask.shape 
+        arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask #빈 영상에 마스크들을 추가
     
-    masked_map = np.where(segm_d!=0, 1, 0) + arr_zero
+    masked_map = np.where(segm_d!=0, 1, 0) + arr_zero #region 마스크 영상과 segmentation 마스크 영상을 합침
     seg_d = np.where(masked_map!=0, 1, 0).astype(np.int8)
     kernel0 = disk(3) 
-    masked = binary_dilation(seg_d, kernel0, iterations=1)
+    masked = binary_dilation(seg_d, kernel0, iterations=1) #ngrow
     return np.array(masked, dtype=np.int8)
 
 import warnings
