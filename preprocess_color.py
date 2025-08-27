@@ -10,12 +10,14 @@ import os
 import warnings
 from photutils.segmentation import detect_threshold
 from mask1 import region_mask
+import sys
+
 
 warnings.filterwarnings('ignore')
 
 class Fits:
     def __init__(self, path):
-        self.path = glob.glob(path + '/*.fits')
+        self.path = sorted(glob.glob(path + '/*.fits'))
 
     def mkdir(path, folder):
         if not os.path.exists(path + folder):
@@ -72,14 +74,14 @@ class Master(Fits):
     
     def masking(path, color):
         import ray
-        file = glob.glob(path +'/'+color+'/*.fits')
+        file = sorted(glob.glob(path +'/'+color+'/*.fits'))
         Fits.mkdir(path+'/'+color, '/mask')
         bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
         @ray.remote
         def mask(file, i):
             hdu = fits.open(file[i])[0].data 
             n = format(i, '04')
-            mask = region_mask(hdu,1.5, 0.8)
+            mask = region_mask(hdu,1.5, 0.99)
             fits.writeto(path+'/'+color+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
             bar1.update(i)
         ray.get([mask.remote(file, i) for i in range(len(file))])
@@ -87,8 +89,8 @@ class Master(Fits):
         ray.shutdown()
 
     def dark_sky_flat(path, color):
-        flat_file = glob.glob(path + '/'+color+'/*.fits')
-        mask_file = glob.glob(path+'/'+color+'/mask/*.fits')
+        flat_file = sorted(glob.glob(path + '/'+color+'/*.fits'))
+        mask_file = sorted(glob.glob(path+'/'+color+'/mask/*.fits'))
         scale_list = []
         mode_list = []
         bar0 = progressbar.ProgressBar(maxval=len(flat_file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
@@ -96,18 +98,18 @@ class Master(Fits):
             flat_data = fits.open(flat_file[i])[0].data
             mask = fits.open(mask_file[i])[0].data 
             db_subed = flat_data.astype(np.float32)
-            masked = np.where(mask!=0, np.nan, flat_data)
+            masked = np.ma.masked_where(mask, db_subed) #np.where(mask!=0, np.nan, flat_data)
             mode1 = mode(masked[~np.isnan(masked)])[0]
-            scaled_data = (masked - mode1)/mode1
-            scale_list.append(scaled_data.astype(np.float32))
+            scaled_data = np.ma.masked_array((masked - mode1)/mode1, dtype=np.float16)
+            scale_list.append(scaled_data.astype(np.float16))
             mode_list.append(mode1)
             bar0.update(i)
         mode_tot = np.array(mode_list)
         mean, median, std = sigma_clipped_stats(mode_tot, cenfunc='median', stdfunc='mad_std', sigma=3)
         mode0 = median
-        flat_arr = np.array(scale_list, dtype=np.float32)
+        flat_arr = np.ma.masked_array(scale_list, dtype=np.float16)
         bar0.finish()
-        scaled_flat = np.array(Combine.nanmedian_comb(flat_arr), dtype=np.float32)
+        scaled_flat = np.array(np.ma.median(flat_arr, axis=0), dtype=np.float32)
         master_flat = scaled_flat * mode0 + mode0
         fits.writeto(path + '/process/master_flat_'+color+'.fits', master_flat.astype(np.float32), overwrite=True)
         #return master_flat
@@ -169,32 +171,20 @@ def split_rgb(path, obj_name):
 
 import time
 from sky_sub_color import sky_sub
-def process(path, obj_name):
-    start_time = time.time()
-    #Fits.mkdir(path, '/process')
-    #db_sub(path, obj_name)
-    #convert_fits.debayer_RGGB_multi(path)
-    #convert_fits.split_rgb_multi(path, obj_name)
-    color_list = ['r', 'g', 'b']
-    for i in color_list:
-        Master.masking(path, i)
-        Master.dark_sky_flat(path, i)
-        flat_corr(path, obj_name, i)
-        sky_sub(path, obj_name, i)
-    end_time = time.time()
-    print(f'{end_time - start_time} seconds') 
 
-def binning(data, bin):
+def binning(data):
+    #hdu = np.array(data, dtype=np.float32)
+    """
     img_height, img_width = data.shape
-
     newImage = np.zeros((bin,bin), dtype=np.float32)
 
     new_height = img_height//bin
     new_width = img_width//bin
     """
+    """
     binning
     """
-    data.reshape((1504,2,1504,2)).mean(1).mean(-1)
+    hdu = np.median(np.median(data.reshape((1504,2,1504,2)),axis=-1), axis=1)#.mean(-1).mean(1)
     """
     for j in range(bin):
         for i in range(bin):
@@ -203,16 +193,38 @@ def binning(data, bin):
             pixel = data[y:y+new_height, x:x+new_width]
             newImage[j,i] = np.nanmedian(pixel).astype(np.float32)
     """
-    return data.astype(np.float32) #newImage.astype(np.float32)
-
-process('/volumes/ssd/2025-07-22', 'M13')
+    return hdu.astype(np.float32) #newImage.astype(np.float32) #
+"""
+data = fits.open('/volumes/ssd/NGC5907/1/sky_subed_r/pp0NGC59070000_r.fits')[0].data 
+arr = binning(data)
+print(arr.shape)
+sys.exit()
+"""
 import ray
-file = glob.glob('/volumes/ssd/NGC5907/1/r_pp/pp*.fits')
+file = glob.glob('/volumes/ssd/NGC5907/1/sky_subed_b/pp*.fits')
 @ray.remote
 def bin(file, i):
     n = format(i, '04')
     hdu = fits.open(file[i])[0].data 
-    b_hdu = binning(hdu, 1504)
-    fits.writeto('/volumes/ssd/NGC5907/1/r_pp/binned_NGC5907'+str(n)+'.fits', b_hdu, overwrite=True)
+    b_hdu = binning(hdu)
+    fits.writeto('/volumes/ssd/NGC5907/l/binned_NGC5907'+str(n)+'_b.fits', b_hdu, overwrite=True)
 
+def process(path, obj_name):
+    start_time = time.time()
+    #Fits.mkdir(path, '/process')
+    #db_sub(path, obj_name)
+    #convert_fits.debayer_RGGB_multi(path)
+    #convert_fits.split_rgb_multi(path, obj_name)
+    color_list = ['g', 'b'] #'r', 
+    for i in color_list:
+        Master.masking(path, i)
+        Master.dark_sky_flat(path, i)
+        flat_corr(path, obj_name, i)
+        sky_sub(path, obj_name, i)
+    end_time = time.time()
+    print(f'{end_time - start_time} seconds') 
+
+
+process('/volumes/ssd/2025-07-22', 'M13')
 #ray.get([bin.remote(file, i) for i in range(len(file))]); ray.shutdown()
+

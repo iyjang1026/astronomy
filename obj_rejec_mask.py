@@ -18,19 +18,24 @@ def region_mask(hdu, thrsh):
     threshold = thrsh*bkg.background_rms
     kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
     conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=5, mask=mask1) #1차 천체 탐지
+    seg_map = detect_sources(conv_hdu, threshold, npixels=9, mask=mask1) #1차 천체 탐지
     segm_deblend = deblend_sources(conv_hdu, seg_map,
-                               npixels=10, nlevels=32, contrast=0.0005,
+                               npixels=30, nlevels=32, contrast=0.0005,
                                progress_bar=False) #천체분리
 
-    segm_d = np.array(segm_deblend).astype(np.int16)
-
-    arr = segm_d[1050:2000,1200:2000] #중앙부 크롭
+    segm_d = np.array(segm_deblend).astype(np.int32)
+    x1,y1 = hdu.shape
+    x, y = int(x1/2), int(y1/2)
+    arr = segm_d[x+20:x+200, y-100:y+250] #[1050:2000,1200:2000] #중앙부 크롭
     seg_img = SegmentationImage(arr)
-    labels = [x for x in seg_img.labels if x>=8480] #M 101에 해당하는 값을 가진 label의 리스트
+    
+    #plt.imshow(seg_img, origin='lower'); plt.show(); sys.exit()
+    
+    labels = [x for x in seg_img.labels if x>=4600] #M 101에 해당하는 값을 가진 label의 리스트
     seg_img.remove_labels(labels) #M 101의 segmentation 제거
     segm_d_crop = np.array(seg_img)
-    segm_d[1050:2000,1200:2000] = segm_d_crop #합성
+    segm_d[x+20:x+200, y-100:y+250] = segm_d_crop #합성 #[1050:2000,1200:2000] #[x-400:x+200, y-300:y+400]
+
     segm = SegmentationImage(segm_d)
     cat = SourceCatalog(segm, segm, convolved_data=conv_hdu)
     
@@ -44,16 +49,17 @@ def region_mask(hdu, thrsh):
         a = i.a
         b = i.b
         eps = np.sqrt(1-(b/a)**2)
+        """
         if eps > 0.99:
             a_list.append(0)
         else:
-            a_list.append(b)
-   
-    
+            a_list.append(a)
+        """
+        a_list.append(a)
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-20:] #타원의 단반경 상위 20개 추출
+    tmp_num = tmp[-30:-1] #타원의 단반경 상위 20개 추출
     top_idx = [a_list.index(x) for x in tmp_num]
     
     for i in top_idx:
@@ -63,7 +69,7 @@ def region_mask(hdu, thrsh):
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta) #장반경과 단반경의 3.5배로 마스크 크기 설정
+        aperture = EllipticalAperture(xy, 1.0*a, 1.0*b, theta=theta) #장반경과 단반경의 3.5배로 마스크 크기 설정
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
         mask_x, mask_y = mask.shape
     
@@ -99,22 +105,25 @@ def region_mask(hdu, thrsh):
         m_x, m_y = mask.shape 
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask #빈 영상에 마스크들을 추가
     
+    #kernel0 = disk(3) 
+    #seg_d = binary_dilation(segm_d, kernel0, iterations=1) #ngrow
     masked_map = np.where(segm_d!=0, 1, 0) + arr_zero #region 마스크 영상과 segmentation 마스크 영상을 합침
-    seg_d = np.where(masked_map!=0, 1, 0).astype(np.int8)
-    kernel0 = disk(3) 
-    masked = binary_dilation(seg_d, kernel0, iterations=1) #ngrow
+    masked = np.where(masked_map!=0, 1, 0).astype(np.int8)
+    #masked[1610:1855,1487:1868] = 1 #NGC 5194
+    #masked[1297:1598,1486:1821] = 1 #NGC 5195
+    
     return np.array(masked, dtype=np.int8)
 
 import warnings
 
 warnings.filterwarnings('ignore')
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data
+hdu = fits.open('/volumes/ssd/intern/25_summer/M51_L/sky_subed/coadd.fits')[0].data
 #mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits')[0].data
 #x,y = hdu.shape
 mask = region_mask(hdu,1.5)
-plt.imshow(mask, origin='lower')
+#plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
-#fits.writeto('/volumes/ssd/intern/25_summer/M101_L/obj_rejec_coadd.fits', mask, overwrite=True)
+#fits.writeto('/volumes/ssd/intern/25_summer/NGC6946_L/obj_rejec_coadd.fits', mask, overwrite=True)
 #map1 = np.where(map==0,np.nan, map)
 #plt.imshow(mask, origin='lower')
 #plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,

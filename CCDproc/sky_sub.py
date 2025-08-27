@@ -99,8 +99,8 @@ def sub(data, sky):
 
 import progressbar
 
-def sky_sub(hdu, hdr):
-        mask =  region_mask(hdu,1.5, 0.8) #fits.open(mask)[0].data #
+def sky_sub(hdu, hdr, mask):
+        #mask =  fits.open(mask)[0].data #region_mask(hdu,1.5, 0.8) #
         m_data = np.where(mask!=0,np.nan, hdu) #np.ma.masked_where(mask, hdu) #
         sky = sky_model(m_data, 64).astype(np.float32)
         subed = np.array(hdu-sky).astype(np.float32)
@@ -114,21 +114,21 @@ def astrometry(path, obj_name, ra, dec, radius):
     file.close()
 
 warnings.filterwarnings('ignore')
-
+fig, ax = plt.subplots(1,3, figsize=(12,4))
 def model_plot(path):
      hdu = fits.open(path)[0].data 
-     mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask/mask0024.fits')[0].data ##
+     mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask/mask0000.fits')[0].data ##
      masked = np.where(mask!=0, np.nan, hdu) #
      sky = sky_model(masked, 64)
      mask1 = region_mask(hdu, 1.5, 0.8)
      masked1 = np.where(mask1!=0, np.nan, hdu)
      sky1 = sky_model(masked1, 64)
-     plt.imshow(sky-sky1, cmap='rainbow', origin='lower')
-     plt.colorbar()
-     plt.xlabel('x')
-     plt.ylabel('y')
-     plt.title('Bkg Model')
-     plt.show()
+     model_img = ax[2].imshow(sky1, origin='lower')
+     plt.colorbar(mappable=model_img, ax=ax[2])
+     ax[2].set_xlabel('x')
+     ax[2].set_ylabel('y')
+     ax[2].set_title('Bkg Model')
+     
 
 def mask_plot(path):
      hdu = fits.open(path)[0].data
@@ -136,13 +136,20 @@ def mask_plot(path):
      masked = np.where(mask!=0,np.nan, hdu) #np.ma.masked_where(mask, hdu) #
      median = np.nanmedian(masked)
      std = np.nanstd(masked)
-     plt.imshow(masked,vmax=median+3*std, vmin=median-3*std, origin='lower') # 
-     plt.colorbar()
-     plt.title('Masked Image')
-     plt.xlabel('x')
-     plt.ylabel('y')
-     plt.show()
-
+     img = ax[0].imshow(hdu,vmax=median+3*std, vmin=median-3*std, origin='lower') # 
+     mask = ax[1].imshow(mask, origin='lower')
+     ax[1].set_title('Mask')
+     ax[1].set_xlabel('x')
+     ax[1].set_ylabel('y')
+     #plt.colorbar(mappable=img, ax=ax[0])
+     ax[0].set_title('Preprocessed Image')
+     ax[0].set_xlabel('x')
+     ax[0].set_ylabel('y')
+"""
+model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
+mask_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
+plt.show()
+"""
 def save_mask(path):
      hdu = fits.open(path)[0].data
      mask = region_mask(hdu,1.5, 0.9)

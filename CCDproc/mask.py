@@ -51,7 +51,6 @@ def region_mask(hdu, thrsh, eps_thr):
     
     cat = SourceCatalog(data, segm_deblend, convolved_data=conv_hdu)
     
-    
     ap = cat.kron_aperture
     l = [x for x in ap if x!=None]
     a_list = []

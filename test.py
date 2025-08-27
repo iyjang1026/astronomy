@@ -4,34 +4,37 @@ from astropy.io import fits
 from astropy.stats import sigma_clipped_stats, sigma_clip
 from astropy.wcs import WCS
 from astropy.modeling import models, fitting
+from astropy.table import Table
 from astropy.stats import sigma_clipped_stats
 import glob
 import sys
 from mask1 import region_mask
-def coadd_plot(path):
-    hdul = fits.open(path)
-    mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/obj_rejec_coadd.fits')[0].data
-    hdu0 = hdul[0].data 
-    hdu = np.ma.masked_where(mask, hdu0)
+def coadd_plot(path, obj_name):
+    hdul = fits.open(path + '/sky_subed/coadd.fits')
+    #mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/obj_rejec_coadd.fits')[0].data
+    hdu = hdul[0].data 
+    #hdu = np.ma.masked_where(mask, hdu0)
     hdr = hdul[0].header
     wcs = WCS(hdr)
     mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
-    fig, ax = plt.subplots(subplot_kw=dict(projection=wcs))
-    ax.imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower')
+    fig, ax = plt.subplots(figsize=(6,5),subplot_kw=dict(projection=wcs))
+    ax.imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower', cmap='grey')
     ax.set(xlabel='R.A.', ylabel='Dec')
-    ax.set_title('Object Rejection Masked Image')
+    ax.set_title(obj_name)
     print(std)
     plt.show()
 
 
 def hist(path):
-    file = glob.glob(path + '/pp_masked_nrm*.fits')
-    print(file)
+    file = glob.glob(path + '/total/coadd.fits')
+    mask = glob.glob(path + '/total/mask_coadd.fits')
     bin = 1024
     sampling_size = 1000
     name = ['rm_rm_single', 'sep_sep_single', 'rm_rm_coadd','sep_sep_coadd','sep_rm_single', 'sep_rm_coadd']
-    for i in range(len(file)):
-        hdu = fits.open(file[i])[0].data
+    for i in range(1):
+        arr = fits.open(file[i])[0].data
+        m = fits.open(mask[i])[0].data 
+        hdu = np.ma.masked_where(m, np.ma.masked_equal(arr,0))
         x,y = hdu.shape
         std_data = hdu[int(x/2-sampling_size/2):int(x/2+sampling_size/2),
                        int(y/2-sampling_size/2):int(y/2+sampling_size/2)]
@@ -53,7 +56,7 @@ def hist(path):
     plt.xlabel('Level(ADU)')
     plt.ylabel('Normalized Count')
     plt.xlim(-1500,1500)
-    #plt.show()
+    plt.show()
 
 def image_plot(path):
     preprocessed = glob.glob(path + '/pp/pp*.fits')[0]
@@ -106,8 +109,8 @@ def image_plot(path):
     plt.show()
 
 def residual(path):
-    iraf = fits.open(path + '/fd.fits')[0].data 
-    python_flat = fits.open(path + '/master_flat.fits')[0].data
+    iraf = fits.open(path + '/master_flat.fits')[0].data 
+    python_flat = fits.open(path + '/master_flat0.fits')[0].data
     mean, median0, std0 = sigma_clipped_stats(iraf, cenfunc='median', stdfunc='mad_std', sigma=3)
     mean, median, std = sigma_clipped_stats(python_flat, cenfunc='median', stdfunc='mad_std', sigma=3)
     norm_iraf = iraf / median0 #(iraf - median0)/median0
@@ -212,19 +215,19 @@ def model_diff():
     plt.show()
 
 def model_subed(path):
-    hdu = fits.open(path+'/sky_subed/coadd.fits')[0].data
-    model = fits.open(path+'/model.fits')[0].data 
+    hdu = fits.open(path+'/total/coadd.fits')[0].data
+    model = fits.open(path+'/model_test.fits')[0].data 
     mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
     plt.imshow(hdu-model,vmax=median+3*std, vmin=median-3*std, origin='lower')
     plt.show()
-#coadd_plot('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')
-#hist('/volumes/ssd/intern/25_summer/M101_L')
+coadd_plot('/volumes/ssd/intern/25_summer/NGC5907_r', 'NGC 5907')
+#hist('/volumes/ssd/intern/25_summer/NGC5907_r')
 #image_plot('/volumes/ssd/intern/25_summer/M101_L/')
-#residual('/volumes/ssd/intern/25_summer/M101_L/process')
+#residual('/volumes/ssd/intern/25_summer/NGC6946_L/process')
 #coadd_mask('/volumes/ssd/intern/25_summer/test_nan0.fits')
 #img_show('/volumes/ssd/intern/25_summer/M101_L')
 #model_diff()
-#model_subed('/volumes/ssd/intern/25_summer/M101_L')
+#model_subed('/volumes/ssd/intern/25_summer/NGC5907_r')
 #fig()
 import warnings
 warnings.filterwarnings('ignore')

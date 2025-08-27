@@ -36,15 +36,20 @@ def masking(arr):
     masked = np.where((mask_map_d!=0), np.nan, arr)
     return masked.astype(np.float32)
 
+"""
+for coadd image masking
+"""
+
+
 def region_mask(hdu, thrsh, eps_thr):
-    mask = np.where(hdu!=0, False, True)
+    #mask = np.where(hdu!=0, False, True)
     bkg_est = MedianBackground()
-    bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est, mask=mask)
+    bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est)
     data = hdu - bkg.background
     threshold = thrsh*bkg.background_rms
     kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
     conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=7, mask=mask)
+    seg_map = detect_sources(conv_hdu, threshold, npixels=7)
     segm_deblend = deblend_sources(conv_hdu, seg_map,
                                npixels=80, nlevels=32, contrast=0.001,
                                progress_bar=False)
@@ -54,8 +59,9 @@ def region_mask(hdu, thrsh, eps_thr):
     
     
     ap = cat.kron_aperture
+    l = [x for x in ap if x!=None]
     a_list = []
-    for i in ap:
+    for i in l:
         a = None
         b = None
         eps = None
@@ -71,11 +77,11 @@ def region_mask(hdu, thrsh, eps_thr):
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-20:]
+    tmp_num = tmp[-25:]
     top_idx = [a_list.index(x) for x in tmp_num]
     #plt.imshow(hdu, origin='lower')
     for i in top_idx:
-        g_aper = ap[i]
+        g_aper = l[i]
         a = g_aper.a
         b = g_aper.b
         xypos = g_aper.positions
@@ -118,22 +124,24 @@ def region_mask(hdu, thrsh, eps_thr):
         m_x, m_y = mask.shape #crop mask
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     
-    masked_map = np.where(seg!=0, 1, 0) + arr_zero
-    seg_d = np.where(masked_map!=0, 1, 0).astype(np.int8)
     kernel0 = disk(3) 
-    masked = binary_dilation(seg_d, kernel0, iterations=3)
-    return np.array(masked, dtype=np.int8)
+    seg_d = binary_dilation(seg, kernel0, iterations=1)
+    masked_map = np.where(seg_d!=0, 1, 0) + arr_zero
+    masked = np.where(masked_map!=0, 1, 0).astype(np.int8)
+    
+    return np.array(masked, dtype=np.int8) #np.array(seg_d, dtype=np.int8)
 
 """
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data
+hdu = fits.open('/volumes/ssd/intern/25_summer/M51_L/sky_subed/coadd.fits')[0].data
 #x,y = hdu.shape
-mask = region_mask(hdu,1.5)
-plt.imshow(mask, origin='lower')
+mask = region_mask(hdu,2., 0.99)
+#plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
-fits.writeto('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits', mask, overwrite=True)
+fits.writeto('/volumes/ssd/intern/25_summer/M51_L/mask_coadd.fits', mask, overwrite=True)
 #map1 = np.where(map==0,np.nan, map)
+mean, median, std = sigma_clipped_stats(map, cenfunc='median', stdfunc='mad_std', sigma=3)
 #plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,
-#plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
+plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
 #plt.imshow(map[int(x/2-1300):int(x/2+1300),int(y/2-1300):int(y/2+1300)],vmax=median+3*std, vmin=median-3*std,
             #origin='lower')
 #plt.colorbar()

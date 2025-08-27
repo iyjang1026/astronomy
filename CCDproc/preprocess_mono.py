@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 
 class Fits:
     def __init__(self, path):
-        self.path = glob.glob(path + '/*.fit')
+        self.path = sorted(glob.glob(path + '/*.fit'))
 
     def mkdir(path, folder):
         if not os.path.exists(path + folder):
@@ -56,14 +56,14 @@ class Master(Fits):
         return master_dark.astype(np.float32)
     
     def masking(path):
-        file = glob.glob(path +'/pp_obj/*.fit')
+        file = sorted(glob.glob(path +'/pp_obj/*.fit'))
         Fits.mkdir(path, '/mask')
         bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
         @ray.remote
         def mask(file, i):
             hdu = fits.open(file[i])[0].data 
             n = format(i, '04')
-            mask = region_mask(hdu,1.5, 0.8)
+            mask = region_mask(hdu,1.5, 0.99)
             fits.writeto(path+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
             bar1.update(i)
         ray.get([mask.remote(file, i) for i in range(len(file))])
@@ -80,30 +80,30 @@ class Master(Fits):
         """    
     
     def dark_sky_flat(path):
-        flat_file = glob.glob(path +'/pp_obj/pp*.fit')
-        mask_file = glob.glob(path + '/mask/*.fits')
+        flat_file = sorted(glob.glob(path +'/pp_obj/pp*.fit'))
+        mask_file = sorted(glob.glob(path + '/mask/mask*.fits'))
         scale_list = []
         mode_list = []
         bar0 = progressbar.ProgressBar(maxval=len(flat_file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
         for i in range(len(flat_file)):
             flat_data, scaled_data, mode1, masked = None,None,None,None
-            hdul = fits.open(flat_file[i])
-            flat_data = weakref.ref(hdul[0].data)()
+            flat_data = fits.open(flat_file[i])[0].data
             mask = fits.open(mask_file[i])[0].data
-            masked = np.where(mask==1,np.nan,flat_data)
-            mode1 = mode(masked[~np.isnan(masked)])[0]
-            scaled_data = np.array((masked - mode1)/mode1)
-            scale_list.append(scaled_data.astype(np.float32))
-            mode_list.append(mode1)
-            hdul.close()
+            masked = np.ma.masked_where(mask, flat_data) #np.where(mask==1,np.nan,flat_data) #
+            mode1 = mode(masked[~np.isnan(masked)])[0] #
+            scaled_data = np.ma.array((masked - mode1)/mode1)
+            scale_list.append(scaled_data.astype(np.float16))
+            #plt.imshow(scaled_data, origin='lower'); plt.show(); sys.exit()
+            mode_list.append(mode1.astype(np.float32))
             bar0.update(i)
-        mode_tot = np.array(mode_list)
+        mode_tot = np.array(mode_list, dtype=np.float32)
         mean, mode0, std = sigma_clipped_stats(mode_tot, cenfunc='median', stdfunc='mad_std', sigma=3)
-        flat_arr = np.array(scale_list).astype(np.float32)
+        flat_arr = np.ma.array(scale_list).astype(np.float16)
         bar0.finish()
-        scaled_flat = np.nanmedian(weakref.ref(flat_arr)(), axis=0)
+        scaled_flat = np.ma.median(weakref.ref(flat_arr)(), axis=0)
         scaled_flat.astype(np.float32)
         master_flat = np.array((scaled_flat * mode0) + mode0, dtype=np.float32)
+        #plt.imshow(master_flat, origin='lower'); plt.show(); sys.exit()
         fits.writeto(path + '/process/master_flat.fits', weakref.ref(master_flat)(), overwrite=True)
         bar0.finish()
         print(f'master flat has been made')
@@ -128,7 +128,8 @@ def db_sub(path, obj_name):
     file = Fits(path + '/LIGHT').path
     Fits.mkdir(path, '/pp_obj')
     bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
-    for i in range(len(file)):
+    @ray.remote
+    def sub(file, bias, dark, i):
         n = format(i, '04')
         hdul = fits.open(file[i])
         l_hdu = hdul[0].data
@@ -139,6 +140,9 @@ def db_sub(path, obj_name):
         fits.writeto(path + '/pp_obj/pp'+obj_name+'_'+str(n)+'.fit', weakref.ref(l_db)(), header=l_hdr, overwrite=True)
         hdul.close()
         bar1.update(i)
+
+    ray.get([sub.remote(file, bias, dark, i) for i in range(len(file))])
+    ray.shutdown()
     bar1.finish()
     print(f'dark and bias are subed')
 
@@ -147,7 +151,8 @@ def flat_corr(path, obj_name):
     flat = fits.open(path + '/process/master_flat.fits')[0].data
     Fits.mkdir(path, '/pp')
     bar1 = progressbar.ProgressBar(maxval=len(file), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
-    for i in range(len(file)):
+    @ray.remote
+    def corr(file, flat, i):
         n = format(i, '04')
         l_hdu = fits.open(file[i])[0].data
         l_hdr = fits.open(file[i])[0].header
@@ -157,6 +162,8 @@ def flat_corr(path, obj_name):
         l_final.astype(np.float32)
         fits.writeto(path + '/pp/pp'+obj_name+'_'+str(n)+'.fits', weakref.ref(l_final)(), header=l_hdr, overwrite=True)
         bar1.update(i)
+    ray.get([corr.remote(file, flat, i) for i in range(len(file))])
+    ray.shutdown()
     bar1.finish()
     print(f'preprocessing complete')
 
@@ -167,21 +174,21 @@ def astrometry(path, obj_name, ra, dec, radius):
 
 from sky_sub import sky_sub
 def sky_subd(path, obj_name):
-    if not os.path.exists(path + '/sky_subed2'):
-        os.mkdir(path + '/sky_subed2')
-    p = glob.glob(path + '/pp/pp*.fits')
-    #m = glob.glob(path + '/mask/*.fits')
+    if not os.path.exists(path + '/sky_subed'):
+        os.mkdir(path + '/sky_subed')
+    p = sorted(glob.glob(path + '/pp/pp*.fits'))
+    m = sorted(glob.glob(path + '/mask/*.fits'))
     bar1 = progressbar.ProgressBar(maxval=len(p), widgets=['[',progressbar.Timer(),']',progressbar.Bar()]).start()
     @ray.remote
-    def sky(p,i):
+    def sky(p,i,m):
         n = format(i, '04')
         hdu = fits.open(p[i])[0].data 
         hdr = fits.open(p[i])[0].header
-        #mask = fits.open(m[i])[0].data
-        subed, hdr = sky_sub(hdu,hdr)
-        fits.writeto(path +'/sky_subed2/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
+        mask = fits.open(m[i])[0].data
+        subed, hdr = sky_sub(hdu,hdr, mask)
+        fits.writeto(path +'/sky_subed/pp' + obj_name + str(n)+'.fits',subed , header=hdr, overwrite=True)
         bar1.update(i)
-    ray.get([sky.remote(p,i) for i in range(len(p))])
+    ray.get([sky.remote(p,i,m) for i in range(len(p))])
     bar1.finish()
     ray.shutdown()
 
@@ -205,6 +212,6 @@ def full_proc(path, obj_name):
 
 if __name__ == '__main__':
     #process('/volumes/ssd/intern/25_summer/M101_L', 'M101')
-    full_proc('/volumes/ssd/intern/25_summer/M101_L', 'M101')
-    #astrometry('/volumes/ssd/intern/25_summer/M101_L/sky_subed','M101','14:03:12.6','+54:20:55.5','1.5')
+    full_proc('/volumes/ssd/intern/25_summer/NGC6946_L', 'NGC6946')
+    #astrometry('/volumes/ssd/intern/25_summer/NGC6946_L/sky_subed','NGC6946','20:34:52.3','+60:09:13.2','1.5')
 
