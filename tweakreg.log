@@ -1,0 +1,633 @@
+[INFO    ] Setting up logfile :  tweakreg.log
+[INFO    ] TweakReg Version 3.10.0 started at: 15:16:39.853 (03/09/2025) 
+[INFO    ] 
+[INFO    ] Version Information
+[INFO    ] --------------------
+[INFO    ] Python Version 3.11.13 | packaged by conda-forge | (main, Jun  4 2025, 14:48:01) [Clang 18.1.8 ]
+[INFO    ] numpy Version -> 2.2.6 
+[INFO    ] astropy Version -> 7.1.0 
+[INFO    ] stwcs Version -> 1.7.5 
+[INFO    ] photutils Version -> 2.2.0 
+[INFO    ] 
+[INFO    ] USER INPUT PARAMETERS common to all Processing Steps:
+[INFO    ] 	clean :	True
+[INFO    ] 	enforce_user_order :	True
+[INFO    ] 	exclusions :	
+[INFO    ] 	expand_refcat :	False
+[INFO    ] 	input :	['/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010001.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010002.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010003.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010004.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010005.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010006.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010007.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010008.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010009.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010010.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010011.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010012.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010013.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010014.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010015.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010016.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010017.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010018.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010019.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010020.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010021.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010022.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010023.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010024.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010025.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010026.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010027.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010028.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010029.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010030.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010031.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010032.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010033.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010034.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010035.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010036.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010037.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010038.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010039.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010040.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010041.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010042.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010043.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010044.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010045.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010046.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010047.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010048.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010049.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010050.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010051.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010052.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010053.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010054.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010055.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010056.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010057.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010058.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010059.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010060.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010061.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010062.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010063.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010064.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010065.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010066.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010067.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010068.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010069.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010070.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010071.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010072.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010073.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010074.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010075.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010076.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010077.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010078.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010079.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010080.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010081.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010082.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010083.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010084.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010085.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010086.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010087.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010088.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010089.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010090.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010091.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010092.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010093.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010094.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010095.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010096.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010097.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010098.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010099.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010100.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010101.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010102.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010103.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010104.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010105.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010106.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010107.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010108.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010109.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010110.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010111.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010112.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010113.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010114.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010115.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010116.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010117.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010118.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010119.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010120.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010121.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010122.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010123.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010124.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010125.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010126.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010127.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010128.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010129.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010130.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010131.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010132.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010133.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010134.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010135.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010136.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010137.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010138.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010139.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010140.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010141.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010142.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010143.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010144.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010145.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010146.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010147.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010148.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010149.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010150.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010151.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010152.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010153.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010154.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010155.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010156.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010157.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010158.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010159.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010160.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010161.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010162.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010163.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010164.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010165.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010166.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010167.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010168.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010169.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010170.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010171.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010172.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010173.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010174.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010175.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010176.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010177.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010178.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010179.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010180.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010181.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010182.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010183.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010184.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010185.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010186.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010187.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010188.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010189.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010190.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010191.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010192.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010193.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010194.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010195.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010196.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010197.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010198.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010199.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010200.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010201.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010202.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010203.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010204.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010205.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010206.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010207.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010208.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010209.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010210.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010211.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010212.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010213.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010214.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010215.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010216.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010217.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010218.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010219.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010220.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010221.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010222.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010223.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010224.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010225.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010226.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010227.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010228.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010229.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010230.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010231.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010232.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010233.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010234.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010235.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010236.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010237.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010238.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010239.fits']
+[INFO    ] 	interactive :	False
+[INFO    ] 	refimage :	
+[INFO    ] 	runfile :	tweakreg.log
+[INFO    ] 	updatewcs :	False
+[INFO    ] 	verbose :	False
+[INFO    ] 	writecat :	False
+[INFO    ] 
+[INFO    ] Finding shifts for: 
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010001.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010002.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010003.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010004.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010005.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010006.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010007.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010008.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010009.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010010.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010011.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010012.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010013.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010014.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010015.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010016.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010017.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010018.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010019.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010020.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010021.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010022.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010023.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010024.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010025.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010026.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010027.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010028.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010029.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010030.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010031.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010032.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010033.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010034.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010035.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010036.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010037.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010038.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010039.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010040.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010041.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010042.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010043.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010044.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010045.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010046.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010047.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010048.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010049.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010050.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010051.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010052.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010053.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010054.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010055.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010056.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010057.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010058.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010059.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010060.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010061.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010062.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010063.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010064.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010065.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010066.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010067.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010068.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010069.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010070.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010071.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010072.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010073.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010074.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010075.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010076.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010077.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010078.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010079.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010080.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010081.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010082.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010083.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010084.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010085.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010086.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010087.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010088.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010089.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010090.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010091.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010092.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010093.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010094.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010095.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010096.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010097.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010098.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010099.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010100.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010101.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010102.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010103.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010104.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010105.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010106.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010107.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010108.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010109.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010110.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010111.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010112.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010113.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010114.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010115.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010116.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010117.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010118.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010119.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010120.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010121.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010122.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010123.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010124.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010125.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010126.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010127.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010128.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010129.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010130.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010131.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010132.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010133.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010134.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010135.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010136.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010137.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010138.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010139.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010140.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010141.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010142.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010143.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010144.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010145.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010146.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010147.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010148.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010149.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010150.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010151.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010152.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010153.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010154.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010155.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010156.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010157.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010158.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010159.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010160.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010161.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010162.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010163.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010164.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010165.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010166.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010167.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010168.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010169.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010170.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010171.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010172.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010173.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010174.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010175.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010176.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010177.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010178.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010179.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010180.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010181.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010182.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010183.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010184.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010185.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010186.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010187.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010188.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010189.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010190.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010191.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010192.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010193.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010194.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010195.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010196.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010197.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010198.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010199.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010200.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010201.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010202.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010203.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010204.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010205.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010206.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010207.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010208.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010209.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010210.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010211.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010212.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010213.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010214.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010215.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010216.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010217.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010218.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010219.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010220.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010221.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010222.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010223.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010224.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010225.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010226.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010227.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010228.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010229.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010230.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010231.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010232.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010233.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010234.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010235.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010236.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010237.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010238.fits
+[INFO    ]     /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010239.fits
+[INFO    ] 
+[INFO    ] USER INPUT PARAMETERS for finding sources for each input image:
+[INFO    ] 	clean :	True
+[INFO    ] 	computesig :	True
+[INFO    ] 	conv_width :	3.0
+[INFO    ] 	dqbits :	
+[INFO    ] 	enforce_user_order :	True
+[INFO    ] 	expand_refcat :	False
+[INFO    ] 	fluxmax :	None
+[INFO    ] 	fluxmin :	None
+[INFO    ] 	input :	['/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010001.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010002.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010003.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010004.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010005.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010006.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010007.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010008.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010009.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010010.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010011.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010012.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010013.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010014.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010015.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010016.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010017.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010018.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010019.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010020.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010021.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010022.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010023.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010024.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010025.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010026.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010027.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010028.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010029.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010030.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010031.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010032.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010033.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010034.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010035.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010036.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010037.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010038.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010039.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010040.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010041.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010042.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010043.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010044.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010045.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010046.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010047.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010048.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010049.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010050.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010051.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010052.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010053.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010054.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010055.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010056.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010057.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010058.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010059.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010060.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010061.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010062.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010063.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010064.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010065.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010066.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010067.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010068.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010069.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010070.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010071.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010072.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010073.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010074.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010075.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010076.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010077.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010078.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010079.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010080.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010081.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010082.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010083.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010084.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010085.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010086.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010087.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010088.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010089.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010090.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010091.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010092.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010093.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010094.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010095.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010096.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010097.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010098.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010099.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010100.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010101.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010102.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010103.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010104.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010105.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010106.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010107.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010108.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010109.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010110.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010111.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010112.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010113.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010114.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010115.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010116.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010117.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010118.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010119.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010120.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010121.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010122.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010123.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010124.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010125.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010126.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010127.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010128.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010129.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010130.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010131.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010132.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010133.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010134.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010135.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010136.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010137.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010138.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010139.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010140.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010141.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010142.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010143.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010144.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010145.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010146.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010147.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010148.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010149.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010150.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010151.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010152.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010153.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010154.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010155.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010156.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010157.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010158.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010159.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010160.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010161.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010162.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010163.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010164.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010165.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010166.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010167.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010168.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010169.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010170.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010171.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010172.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010173.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010174.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010175.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010176.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010177.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010178.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010179.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010180.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010181.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010182.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010183.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010184.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010185.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010186.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010187.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010188.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010189.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010190.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010191.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010192.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010193.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010194.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010195.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010196.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010197.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010198.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010199.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010200.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010201.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010202.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010203.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010204.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010205.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010206.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010207.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010208.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010209.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010210.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010211.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010212.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010213.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010214.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010215.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010216.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010217.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010218.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010219.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010220.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010221.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010222.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010223.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010224.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010225.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010226.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010227.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010228.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010229.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010230.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010231.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010232.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010233.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010234.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010235.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010236.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010237.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010238.fits', '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010239.fits']
+[INFO    ] 	interactive :	False
+[INFO    ] 	nsigma :	1.5
+[INFO    ] 	peakmax :	50000
+[INFO    ] 	peakmin :	100
+[INFO    ] 	ratio :	1.0
+[INFO    ] 	refimage :	
+[INFO    ] 	roundhi :	1.0
+[INFO    ] 	roundlo :	-1.0
+[INFO    ] 	runfile :	tweakreg.log
+[INFO    ] 	sharphi :	1.0
+[INFO    ] 	sharplo :	0.2
+[INFO    ] 	skysigma :	0.0
+[INFO    ] 	theta :	0.0
+[INFO    ] 	threshold :	300.0
+[INFO    ] 	updatehdr :	True
+[INFO    ] 	updatewcs :	False
+[INFO    ] 	use_sharp_round :	False
+[INFO    ] 	verbose :	False
+[INFO    ] 	writecat :	False
+[INFO    ] 	xyunits :	pixels
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010000.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.516501 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits', EXT=('PRIMARY', 1) started at: 15:16:41.401 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 6.129514
+[INFO    ] ###Source finding finished at: 15:16:41.887 (03/09/2025)
+[INFO    ]      Found 3516 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits': 3516
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010001.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010001.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.516914 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010001.fits', EXT=('PRIMARY', 1) started at: 15:16:41.988 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 5.738244
+[INFO    ] ###Source finding finished at: 15:16:42.556 (03/09/2025)
+[INFO    ]      Found 5814 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010001.fits': 5814
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010002.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010002.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.517350 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010002.fits', EXT=('PRIMARY', 1) started at: 15:16:42.670 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 4.867115
+[INFO    ] ###Source finding finished at: 15:16:43.612 (03/09/2025)
+[INFO    ]      Found 17981 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010002.fits': 17981
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010003.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010003.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.517951 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010003.fits', EXT=('PRIMARY', 1) started at: 15:16:43.800 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 6.362604
+[INFO    ] ###Source finding finished at: 15:16:44.214 (03/09/2025)
+[INFO    ]      Found 2566 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010003.fits': 2566
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010004.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010004.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.518379 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010004.fits', EXT=('PRIMARY', 1) started at: 15:16:44.299 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 5.743856
+[INFO    ] ###Source finding finished at: 15:16:44.795 (03/09/2025)
+[INFO    ]      Found 5713 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010004.fits': 5713
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010005.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010005.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.518801 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010005.fits', EXT=('PRIMARY', 1) started at: 15:16:44.903 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 9.810798
+[INFO    ] ###Source finding finished at: 15:16:45.268 (03/09/2025)
+[INFO    ]      Found 679 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010005.fits': 679
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010006.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010006.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.519467 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010006.fits', EXT=('PRIMARY', 1) started at: 15:16:45.343 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 6.657212
+[INFO    ] ###Source finding finished at: 15:16:45.741 (03/09/2025)
+[INFO    ]      Found 1897 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010006.fits': 1897
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010007.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010007.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.520123 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010007.fits', EXT=('PRIMARY', 1) started at: 15:16:45.823 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 3.736414
+[INFO    ] ###Source finding finished at: 15:16:48.547 (03/09/2025)
+[INFO    ]      Found 52365 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010007.fits': 52365
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010008.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010008.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.520529 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010008.fits', EXT=('PRIMARY', 1) started at: 15:16:48.953 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 4.315434
+[INFO    ] ###Source finding finished at: 15:16:50.551 (03/09/2025)
+[INFO    ]      Found 32495 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010008.fits': 32495
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010009.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010009.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.520941 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010009.fits', EXT=('PRIMARY', 1) started at: 15:16:50.830 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 6.816743
+[INFO    ] ###Source finding finished at: 15:16:51.21 (03/09/2025)
+[INFO    ]      Found 1620 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010009.fits': 1620
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010010.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010010.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.521653 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010010.fits', EXT=('PRIMARY', 1) started at: 15:16:51.298 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 4.113158
+[INFO    ] ###Source finding finished at: 15:16:53.325 (03/09/2025)
+[INFO    ]      Found 38891 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010010.fits': 38891
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010011.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010011.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.522067 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010011.fits', EXT=('PRIMARY', 1) started at: 15:16:53.648 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 7.802548
+[INFO    ] ###Source finding finished at: 15:16:54.016 (03/09/2025)
+[INFO    ]      Found 877 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010011.fits': 877
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010012.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010012.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.522697 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010012.fits', EXT=('PRIMARY', 1) started at: 15:16:54.101 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 5.910353
+[INFO    ] ###Source finding finished at: 15:16:54.5 (03/09/2025)
+[INFO    ]      Found 4605 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010012.fits': 4605
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010013.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010013.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.523110 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010013.fits', EXT=('PRIMARY', 1) started at: 15:16:54.683 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 6.330583
+[INFO    ] ###Source finding finished at: 15:16:55.164 (03/09/2025)
+[INFO    ]      Found 2597 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010013.fits': 2597
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010014.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010014.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.523662 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010014.fits', EXT=('PRIMARY', 1) started at: 15:16:55.261 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 10.454900
+[INFO    ] ###Source finding finished at: 15:16:55.673 (03/09/2025)
+[INFO    ]      Found 631 objects.
+[INFO    ] ===  FINAL number of objects in image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010014.fits': 631
+[INFO    ] 
+[INFO    ] ############################################################
+[INFO    ] #                                                          #
+[INFO    ] # WARNING:                                                 #
+[INFO    ] # Image /volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM #
+[INFO    ] # 1010015.fits may not have the full correct WCS solution  #
+[INFO    ] # in the header as created by stwcs.updatewcs Image        #
+[INFO    ] # alignment may not be taking into account the full        #
+[INFO    ] # distortion solution.                                     #
+[INFO    ] # Turning on the "updatewcs" parameter would insure that   #
+[INFO    ] # each image uses the full distortion model when aligning  #
+[INFO    ] # this image.                                              #
+[INFO    ] #                                                          #
+[INFO    ] ############################################################
+[INFO    ] ===  Source finding for image '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010015.fits':
+[WARNING ] FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 60470.524073 from DATE-OBS'.
+[INFO    ]   #  Source finding for '/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010015.fits', EXT=('PRIMARY', 1) started at: 15:16:55.75 (03/09/2025)
+[INFO    ]    Finding sources using sky sigma = 3.077780
+[INFO    ] ###Source finding finished at: 15:17:00.927 (03/09/2025)
+[INFO    ]      Found 73509 objects.
+[INFO    ] Quitting as a result of user request (Ctrl-C)...
+[INFO    ] Trailer file written to:  tweakreg.log

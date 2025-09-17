@@ -41,7 +41,7 @@ for coadd image masking
 """
 
 
-def region_mask(hdu, thrsh, eps_thr):
+def region_mask(hdu, thrsh):
     #mask = np.where(hdu!=0, False, True)
     bkg_est = MedianBackground()
     bkg = Background2D(hdu, (64,64), filter_size=(3,3), bkg_estimator=bkg_est)
@@ -56,8 +56,7 @@ def region_mask(hdu, thrsh, eps_thr):
     seg = np.array(seg_map)
     
     cat = SourceCatalog(data, segm_deblend, convolved_data=conv_hdu)
-    
-    
+    """
     ap = cat.kron_aperture
     l = [x for x in ap if x!=None]
     a_list = []
@@ -72,24 +71,29 @@ def region_mask(hdu, thrsh, eps_thr):
             a_list.append(0)
         else:
             a_list.append(b)
-   
-    
+    """
+    a_list = list(cat.semimajor_sigma.value)
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
     tmp_num = tmp[-25:]
     top_idx = [a_list.index(x) for x in tmp_num]
-    #plt.imshow(hdu, origin='lower')
     for i in top_idx:
+        """
         g_aper = l[i]
         a = g_aper.a
         b = g_aper.b
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
+        """
+        cat0 = cat[i]
+        xy = (cat0.xcentroid, cat0.ycentroid)
+        theta = cat0.orientation.value *np.pi /180
+        a,b = 3*cat0.semimajor_sigma.value, 3*cat0.semiminor_sigma.value
+        aperture = EllipticalAperture(xy, 3*a, 3*b, theta)
+        #aperture = #EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
-        #aperture.plot(color='C3')
         mask_x, mask_y = mask.shape
     
         st_x = np.int16(xy[1] - mask_x/2)
@@ -125,16 +129,17 @@ def region_mask(hdu, thrsh, eps_thr):
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     
     kernel0 = disk(3) 
-    seg_d = binary_dilation(seg, kernel0, iterations=1)
+    seg_d= binary_dilation(seg, kernel0, iterations=1)
     masked_map = np.where(seg_d!=0, 1, 0) + arr_zero
+    #half = disk(100)
+    #masked_map[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
     masked = np.where(masked_map!=0, 1, 0).astype(np.int8)
     
-    return np.array(masked, dtype=np.int8) #np.array(seg_d, dtype=np.int8)
-
+    return np.array(masked, dtype=np.int8)
 """
-hdu = fits.open('/volumes/ssd/intern/25_summer/M51_L/sky_subed/coadd.fits')[0].data
+hdu = fits.open('/volumes/ssd/intern/25_summer/M51_L/sky_subed/ppM510000.fits')[0].data
 #x,y = hdu.shape
-mask = region_mask(hdu,2., 0.99)
+mask = region_mask(hdu,1.5)
 #plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
 fits.writeto('/volumes/ssd/intern/25_summer/M51_L/mask_coadd.fits', mask, overwrite=True)

@@ -1,0 +1,146 @@
+[INFO    ] Setting up logfile :  astrodrizzle.log
+[INFO    ] AstroDrizzle log file: astrodrizzle.log
+[INFO    ] AstroDrizzle Version 3.10.0 started at: 19:56:39.85 (03/09/2025)
+[INFO    ] 
+[INFO    ] Version Information
+[INFO    ] --------------------
+[INFO    ] Python Version 3.11.13 | packaged by conda-forge | (main, Jun  4 2025, 14:48:01) [Clang 18.1.8 ]
+[INFO    ] numpy Version -> 2.2.6 
+[INFO    ] astropy Version -> 7.1.0 
+[INFO    ] stwcs Version -> 1.7.5 
+[INFO    ] photutils Version -> 2.2.0 
+[INFO    ] ==== Processing Step  Initialization  started at  19:56:39.856 (03/09/2025)
+[INFO    ] 
+[INFO    ] Executing serially
+[ERROR   ] ##############################################################################
+[ERROR   ] #                                                                            #
+[ERROR   ] # ERROR:                                                                     #
+[ERROR   ] # AstroDrizzle Version 3.10.0 encountered a problem!  Processing terminated  #
+[ERROR   ] # at 19:56:42.262 (03/09/2025).                                              #
+[ERROR   ] #                                                                            #
+[ERROR   ] ##############################################################################
+[INFO    ] 
+[INFO    ]    --------------------          --------------------
+[INFO    ]                    Step          Elapsed time
+[INFO    ]    --------------------          --------------------
+[INFO    ] 
+[INFO    ]          Initialization          0.0000 sec.
+[INFO    ]    ====================          ====================
+[INFO    ]                   Total          0.0000 sec.
+[INFO    ] 
+[INFO    ] Trailer file written to:  astrodrizzle.log
+[ERROR   ] An unhandled exception ocurred:
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/stsci/tools/check_files.py", line 372, in checkPA_V3
+    pav3 = f[0].header['PA_V3']
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 170, in __getitem__
+    card = self._cards[self._cardindex(key)]
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 1719, in _cardindex
+    raise KeyError(f"Keyword {keyword!r} not found.")
+KeyError: "Keyword 'PA_V3' not found."
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/util.py", line 225, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/astrodrizzle.py", line 186, in run
+    imgObjList, outwcs = processInput.setCommonInput(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/processInput.py", line 112, in setCommonInput
+    asndict, ivmlist, output = process_input(
+                               ^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/processInput.py", line 542, in process_input
+    newfilelist, ivmlist, output, oldasndict, origflist = buildFileListOrig(
+                                                          ^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/processInput.py", line 714, in buildFileListOrig
+    newfilelist, ivmlist = check_files.checkFiles(updated_input, ivmlist)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/stsci/tools/check_files.py", line 38, in checkFiles
+    removed_pav3_files = checkPA_V3(newfilelist)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/stsci/tools/check_files.py", line 374, in checkPA_V3
+    rootname = f[0].header['ROOTNAME']
+               ~~~~~~~~~~~^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 170, in __getitem__
+    card = self._cards[self._cardindex(key)]
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 1719, in _cardindex
+    raise KeyError(f"Keyword {keyword!r} not found.")
+KeyError: "Keyword 'ROOTNAME' not found."
+[INFO    ] Setting up logfile :  astrodrizzle.log
+[INFO    ] AstroDrizzle log file: astrodrizzle.log
+[INFO    ] AstroDrizzle Version 3.10.0 started at: 20:03:54.851 (03/09/2025)
+[INFO    ] 
+[INFO    ] Version Information
+[INFO    ] --------------------
+[INFO    ] Python Version 3.11.13 | packaged by conda-forge | (main, Jun  4 2025, 14:48:01) [Clang 18.1.8 ]
+[INFO    ] numpy Version -> 2.2.6 
+[INFO    ] astropy Version -> 7.1.0 
+[INFO    ] stwcs Version -> 1.7.5 
+[INFO    ] photutils Version -> 2.2.0 
+[INFO    ] ==== Processing Step  Initialization  started at  20:03:54.851 (03/09/2025)
+[INFO    ] 
+[INFO    ] Executing serially
+[ERROR   ] ##############################################################################
+[ERROR   ] #                                                                            #
+[ERROR   ] # ERROR:                                                                     #
+[ERROR   ] # AstroDrizzle Version 3.10.0 encountered a problem!  Processing terminated  #
+[ERROR   ] # at 20:03:56.770 (03/09/2025).                                              #
+[ERROR   ] #                                                                            #
+[ERROR   ] ##############################################################################
+[INFO    ] 
+[INFO    ]    --------------------          --------------------
+[INFO    ]                    Step          Elapsed time
+[INFO    ]    --------------------          --------------------
+[INFO    ] 
+[INFO    ]          Initialization          0.0000 sec.
+[INFO    ]    ====================          ====================
+[INFO    ]                   Total          0.0000 sec.
+[INFO    ] 
+[INFO    ] Trailer file written to:  astrodrizzle.log
+[ERROR   ] An unhandled exception ocurred:
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/stsci/tools/check_files.py", line 372, in checkPA_V3
+    pav3 = f[0].header['PA_V3']
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 170, in __getitem__
+    card = self._cards[self._cardindex(key)]
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 1719, in _cardindex
+    raise KeyError(f"Keyword {keyword!r} not found.")
+KeyError: "Keyword 'PA_V3' not found."
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/util.py", line 225, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/astrodrizzle.py", line 186, in run
+    imgObjList, outwcs = processInput.setCommonInput(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/processInput.py", line 112, in setCommonInput
+    asndict, ivmlist, output = process_input(
+                               ^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/processInput.py", line 542, in process_input
+    newfilelist, ivmlist, output, oldasndict, origflist = buildFileListOrig(
+                                                          ^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/drizzlepac/processInput.py", line 714, in buildFileListOrig
+    newfilelist, ivmlist = check_files.checkFiles(updated_input, ivmlist)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/stsci/tools/check_files.py", line 38, in checkFiles
+    removed_pav3_files = checkPA_V3(newfilelist)
+                         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/stsci/tools/check_files.py", line 374, in checkPA_V3
+    rootname = f[0].header['ROOTNAME']
+               ~~~~~~~~~~~^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 170, in __getitem__
+    card = self._cards[self._cardindex(key)]
+                       ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/miniconda3/envs/stenv/lib/python3.11/site-packages/astropy/io/fits/header.py", line 1719, in _cardindex
+    raise KeyError(f"Keyword {keyword!r} not found.")
+KeyError: "Keyword 'ROOTNAME' not found."

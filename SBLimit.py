@@ -79,16 +79,16 @@ def median_std(hdu, mask, iter):
 
 def sb_limit():
     #read catalogue
-    source = '/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.cat'#
+    source = '/volumes/ssd/2025-09-15/l/coadd.cat'#
     data = Table.read(source, format='ascii', converters={'obsid':str})
     #check the catalogue location
-    sdss = Table.read('/Users/jang-in-yeong/catalogue/sdss_m101.csv', format='ascii') #check!! 
+    sdss = Table.read('~/M27_GSC.csv', format='ascii') #check!! 
 
     #extract coordinate
-    sdsscat = sdss['ra', 'dec', 'g','r']
+    sdsscat = sdss['RA_ICRS', 'DE_ICRS', 'gmag','rmag']
     objcat = data['ALPHAPEAK_J2000','DELTAPEAK_J2000','FLUX_BEST', 'ERRAWIN_IMAGE', 'ERRBWIN_IMAGE']
     #obj_cat = objcat[(objcat['ERRAWIN_IMAGE']<0.01)&(objcat['ERRBWIN_IMAGE']<0.01)]
-    sdss_coord = SkyCoord(ra=sdsscat['ra']*u.degree, dec=sdsscat['dec']*u.degree, frame='fk5')
+    sdss_coord = SkyCoord(ra=sdsscat['RA_ICRS']*u.degree, dec=sdsscat['DE_ICRS']*u.degree, frame='fk5')
     obj_coord = SkyCoord(ra=objcat['ALPHAPEAK_J2000'], dec=objcat['DELTAPEAK_J2000'], frame='fk5')
 
 
@@ -98,7 +98,7 @@ def sb_limit():
 
 
     obj_flux = obj['FLUX_BEST']
-    sdss_mag = sdss_data['r']
+    sdss_mag = sdss_data['rmag']
     count = np.array(obj_flux)
     mag = np.array(sdss_mag)
 
@@ -136,11 +136,11 @@ def sb_limit():
     plt.ylabel('$Mag_{SDSS,r}$')
     sb_lim = popt[1] - 2.5*np.log10(std_noise/(1.89*10))
     plt.text(10**3.5, 10, f'$Z_p$ = {popt[1]:.2f}\nSB Limit = {sb_lim:.2f}', bbox={'boxstyle':'square', 'fc':'white'})
-    plt.title('M 101')
+    plt.title('M27')
 
     plt.show()
 
-#sb_limit()
+sb_limit()
 
 """
 for i in range(10):

@@ -37,20 +37,23 @@ def masking(arr):
     return masked.astype(np.float32)
 
 def region_mask(hdu, thrsh, eps_thr):
+    half = disk(100)
+    z_arr = np.zeros_like(hdu)
+    z_arr[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
     bkg_est = MedianBackground()
-    bkg = Background2D(hdu, (64,64), filter_size=(5,5), bkg_estimator=bkg_est)
+    bkg = Background2D(hdu, (64,64), filter_size=(5,5), bkg_estimator=bkg_est, mask=z_arr)
     data = hdu - bkg.background
     threshold = thrsh*bkg.background_rms
     kernel = make_2dgaussian_kernel(fwhm=3.0, size=5)
     conv_hdu = convolve(data, kernel)
-    seg_map = detect_sources(conv_hdu, threshold, npixels=7)
+    seg_map = detect_sources(conv_hdu, threshold, npixels=5, mask=z_arr)
     segm_deblend = deblend_sources(conv_hdu, seg_map,
-                               npixels=80, nlevels=32, contrast=0.001,
+                               npixels=2000,connectivity=8, mode='exponential', nlevels=32, contrast=0.001,
                                progress_bar=False)
     seg = np.array(seg_map)
     
     cat = SourceCatalog(data, segm_deblend, convolved_data=conv_hdu)
-    
+    """
     ap = cat.kron_aperture
     l = [x for x in ap if x!=None]
     a_list = []
@@ -65,21 +68,28 @@ def region_mask(hdu, thrsh, eps_thr):
             a_list.append(0)
         else:
             a_list.append(b)
-   
-    
+    """
+    a_list = list(cat.semimajor_sigma.value)
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
     tmp_num = tmp[-20:]
     top_idx = [a_list.index(x) for x in tmp_num]
     for i in top_idx:
+        """
         g_aper = l[i]
         a = g_aper.a
         b = g_aper.b
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
+        """
+        cat0 = cat[i]
+        xy = (cat0.xcentroid, cat0.ycentroid)
+        theta = cat0.orientation.value *np.pi /180
+        a,b = 3*cat0.semimajor_sigma.value, 3*cat0.semiminor_sigma.value
+        aperture = EllipticalAperture(xy, 3*a, 3*b, theta)
+        #aperture = #EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
         mask_x, mask_y = mask.shape
     
@@ -116,7 +126,7 @@ def region_mask(hdu, thrsh, eps_thr):
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     
     kernel0 = disk(3) 
-    seg_d= binary_dilation(seg, kernel0, iterations=3)
+    seg_d= binary_dilation(seg, kernel0, iterations=1)
     masked_map = np.where(seg_d!=0, 1, 0) + arr_zero
     half = disk(100)
     masked_map[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
@@ -125,7 +135,7 @@ def region_mask(hdu, thrsh, eps_thr):
     return np.array(masked, dtype=np.int8)
 
 """
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_obj/ppM101_0000.fit')[0].data
+hdu = fits.open('/volumes/ssd/intern/25_summer/M51_L/pp_obj/ppM51_0000.fit')[0].data
 x,y = hdu.shape
 mask = region_mask(hdu,1.5, 0.8)
 map = np.where(mask!=0, np.nan, hdu)

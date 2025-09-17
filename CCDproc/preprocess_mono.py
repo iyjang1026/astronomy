@@ -169,7 +169,13 @@ def flat_corr(path, obj_name):
 
 def astrometry(path, obj_name, ra, dec, radius):
     file = open(path+'/'+obj_name+'.sh', 'w')
-    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots *.fits \nrm -rf *.xyls *.axy *.corr *.match *.new *.rdls *.solved')
+    file.write(f'solve-field --index-dir /Users/jang-in-yeong/solve/index4100 --use-source-extractor -3 {ra} -4 {dec} -5 {radius} --no-plots pp*.fits \nrm -rf *.xyls *.axy *.corr *.match *.wcs *.rdls *.solved'
+               '\nfor i in *.new'
+               '\ndo'
+               '\n    name=`basename $i`'
+               '\n    filename="${name%.*}"'
+               '\n    mv $filename.new solv_$filename.fits'
+               '\ndone')
     file.close()
 
 from sky_sub import sky_sub
@@ -212,6 +218,6 @@ def full_proc(path, obj_name):
 
 if __name__ == '__main__':
     #process('/volumes/ssd/intern/25_summer/M101_L', 'M101')
-    full_proc('/volumes/ssd/intern/25_summer/NGC6946_L', 'NGC6946')
-    #astrometry('/volumes/ssd/intern/25_summer/NGC6946_L/sky_subed','NGC6946','20:34:52.3','+60:09:13.2','1.5')
+    full_proc('/volumes/ssd/intern/25_summer/M101_L', 'M101')
+    #astrometry('/volumes/ssd/intern/25_summer/M101_L/sky_subed','M101','14:03:12.5','+54:20:56.2','1.5')
 

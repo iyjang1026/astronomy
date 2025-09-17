@@ -7,6 +7,7 @@ from astropy.convolution import convolve
 from photutils.segmentation import SegmentationImage, detect_sources, deblend_sources ,make_2dgaussian_kernel, SourceCatalog
 from photutils.background import MedianBackground, Background2D
 from photutils.isophote import EllipseGeometry, Ellipse, build_ellipse_model, IsophoteList, Isophote
+from photutils.aperture import EllipticalAperture
 import matplotlib.pyplot as plt
 import os
 
@@ -35,6 +36,7 @@ def detect(hdu0, mask,i, eps_filter):
     cat = SourceCatalog(hdu[x-300:x+150, y-200:y+100], segm,convolved_data=conv_hdu[x-300:x+150, y-200:y+100]) #천체 카탈로그 생성
     """
     cat = SourceCatalog(hdu, segm_deblend, convolved_data=conv_hdu)
+    """
     ap = cat.kron_aperture #천체에 맞는 타원 생성
     l = [x for x in ap if x!=None]
     a_list = []
@@ -52,22 +54,25 @@ def detect(hdu0, mask,i, eps_filter):
                 a_list.append(b)
         else:
             a_list.append(a)
+    """
+    a_list = list(cat.semimajor_sigma.value)
     max_idx = np.argmax(a_list) #단반경이 가장 긴 타원의 인덱스 반환
-    obj = l[max_idx]
+    obj = cat[max_idx]
 
-    eps = np.sqrt(1-(obj.b / obj.a)**2)
-
-    x_p,y_p = obj.positions
-    x,y = obj.positions
+    eps = np.sqrt(1-(obj.semiminor_sigma.value / obj.semimajor_sigma.value)**2)
+    aper = EllipticalAperture((obj.xcentroid, obj.ycentroid), obj.semimajor_sigma.value*3, obj.semiminor_sigma.value*3, obj.orientation.value*np.pi/180)
+    #x_p,y_p = obj.xcentroid, obj.ycentroid #obj.positions
+    x,y = obj.xcentroid, obj.ycentroid #obj.positions
+    print(obj.ellipticity, eps);sys.exit()
     #geometry = EllipseGeometry(x0=x_p+(x-200), y0=y_p+(y-300), sma=obj.a, eps=eps, pa=np.array(obj.theta)) #isophote를 위한 초기 타원 생성
-    geometry = EllipseGeometry(x0=x, y0=y, sma=obj.a, eps=eps, pa=np.array(obj.theta)) #isophote를 위한 초기 타원 생성
-    #plt.imshow(segm_deblend, origin='lower'); obj.plot(color='C3'); plt.show(); sys.exit()
-    return geometry, obj.a
+    geometry = EllipseGeometry(x0=x, y0=y, sma=obj.semimajor_sigma.value*3, eps=obj.ellipticity, pa=obj.orientation.value*np.pi/180) #isophote를 위한 초기 타원 생성
+    #plt.imshow(segm_deblend, origin='lower'); aper.plot(color='C3'); plt.show(); sys.exit()
+    return geometry, obj.semimajor_sigma.value*3
     #hdu1 = np.ma.masked_where(hdu>40000, hdu)
     
 def ellipse(hdu, geometry, sma):    
     ellipse = Ellipse(hdu, geometry)
-    isolist = ellipse.fit_image(sma0=0.3*sma,maxsma=114.30/1.89,integrmode='bilinear',step=0.07, sclip=3.0, nclip=3, fflag=0.3, fix_center=True, fix_pa=False, fix_eps=False) #isophote
+    isolist = ellipse.fit_image(maxsma=2*sma, integrmode='bilinear',step=0.1, sclip=3.0, nclip=3, fflag=0.3, fix_center=True) #isophote
     tbl = isolist.to_table()    
     print(tbl)
     #fill = np.median(hdu[1050:2000,1200:2000])
@@ -89,12 +94,12 @@ if not os.path.exists(path + '/tbl_median_test_1'):
     os.mkdir(path + '/tbl_median_test_1')
 geo, sma0 = detect(hdu, mask,0, eps_filter=True)
 mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
-for i in np.linspace(round(median-3*sigma), round(median+3*sigma), 5):
+for i in np.linspace(round(median-3*sigma), round(median+3*sigma), 3):
     #print(i)
     
     hdu0 = hdu - i
     tbl = ellipse(hdu0, geo, sma0)
-    tbl.write(path+'/tbl_median_test_1/tbl_'+str(-i)+'.csv', format='ascii.csv', overwrite=True)
+    #tbl.write(path+'/tbl_median_test_1/tbl_'+str(-i)+'.csv', format='ascii.csv', overwrite=True)
     sma = tbl['sma']
     d = 8580 #M 101까지의 거리(kpc)
     kpc = d * np.tan((np.pi/180)*((sma*1.89)/3600))

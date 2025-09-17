@@ -81,7 +81,7 @@ class Master(Fits):
         def mask(file, i):
             hdu = fits.open(file[i])[0].data 
             n = format(i, '04')
-            mask = region_mask(hdu,1.5, 0.99)
+            mask = region_mask(hdu,1.5)
             fits.writeto(path+'/'+color+'/mask/mask'+str(n)+'.fits', mask, overwrite=True)
             bar1.update(i)
         ray.get([mask.remote(file, i) for i in range(len(file))])
@@ -201,21 +201,21 @@ print(arr.shape)
 sys.exit()
 """
 import ray
-file = glob.glob('/volumes/ssd/NGC5907/1/sky_subed_b/pp*.fits')
+file = sorted(glob.glob('/volumes/ssd/BSH_data/250820/0/*.fit'))
 @ray.remote
 def bin(file, i):
     n = format(i, '04')
     hdu = fits.open(file[i])[0].data 
     b_hdu = binning(hdu)
-    fits.writeto('/volumes/ssd/NGC5907/l/binned_NGC5907'+str(n)+'_b.fits', b_hdu, overwrite=True)
+    fits.writeto('/volumes/ssd/BSH_data/250820/0/bin2_light'+str(n)+'.fits', b_hdu, overwrite=True)
 
 def process(path, obj_name):
     start_time = time.time()
-    #Fits.mkdir(path, '/process')
-    #db_sub(path, obj_name)
-    #convert_fits.debayer_RGGB_multi(path)
-    #convert_fits.split_rgb_multi(path, obj_name)
-    color_list = ['g', 'b'] #'r', 
+    Fits.mkdir(path, '/process')
+    db_sub(path, obj_name)
+    convert_fits.debayer_RGGB_multi(path)
+    convert_fits.split_rgb_multi(path, obj_name)
+    color_list = ['r','g', 'b'] 
     for i in color_list:
         Master.masking(path, i)
         Master.dark_sky_flat(path, i)
@@ -225,6 +225,7 @@ def process(path, obj_name):
     print(f'{end_time - start_time} seconds') 
 
 
-process('/volumes/ssd/2025-07-22', 'M13')
+#process('/volumes/ssd/2025-09-15', 'M27')
+astrometry('/volumes/ssd/2025-09-15', 'M27',"19:59:36.4",'+22:43:16.4', '1.5')
 #ray.get([bin.remote(file, i) for i in range(len(file))]); ray.shutdown()
 
