@@ -3,12 +3,9 @@ import progressbar
 import glob
 import astropy.io.fits as fits
 from astropy.stats import sigma_clipped_stats, SigmaClip
-import sep
-from scipy.ndimage import binary_dilation
 from scipy.stats import mode
 import os
 import warnings
-from photutils.segmentation import detect_threshold
 from mask1 import region_mask
 import sys
 
@@ -32,25 +29,6 @@ class Combine(Fits):
     def nanmedian_comb(array):
         median = np.nanmedian(array, axis=0)
         return median
-
-class Masking(Fits):
-    def se_mask(arr):
-        data = np.array(arr, dtype=float)
-        data1 = data.astype(data.dtype.newbyteorder('='))
-
-        bkg_data = sep.Background(data1)
-        bkg = bkg_data.back()
-        
-        sigma = SigmaClip(sigma=3.0, maxiters=10)
-        
-        threshold = np.median(detect_threshold(data1, nsigma=3.0, sigma_clip=sigma))
-        subd = data - bkg
-        obj, seg_map = sep.extract(subd, threshold , segmentation_map=True)
-        mask_map = np.array(seg_map)
-        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
-        mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
-        masked = np.where((mask_map_d!=0), np.nan, data)
-        return masked
 
 class Master(Fits):
     def master_bias(path):
@@ -115,15 +93,17 @@ class Master(Fits):
         #return master_flat
 
     def dome_flat(path, color):
-        file = Fits(path + '/color_flat/'+color).path
+        file = Fits(path + '/flats/'+color).path
+        bias = fits.open(path + '/process/master_bias.fits')[0].data
+        dark = fits.open(path + '/process/master_dark.fits')[0].data
         data = []
         for i in file:
             hdu = fits.open(i)[0].data 
-            db_subed = hdu
+            db_subed = hdu - bias - dark
             data.append(db_subed)
         flat_hdu = np.array(data)
         master_d_flat  = np.median(flat_hdu, axis=0)
-        fits.writeto(path + '/process/master_d_flat_'+color+'.fits', master_d_flat, overwrite=True)
+        fits.writeto(path + '/process/master_flat_'+color+'.fits', master_d_flat.astype(np.float32), overwrite=True)
         
     
 def db_sub(path, obj_name):
@@ -174,40 +154,19 @@ from sky_sub_color import sky_sub
 
 def binning(data):
     #hdu = np.array(data, dtype=np.float32)
-    """
-    img_height, img_width = data.shape
-    newImage = np.zeros((bin,bin), dtype=np.float32)
-
-    new_height = img_height//bin
-    new_width = img_width//bin
-    """
-    """
-    binning
-    """
     hdu = np.median(np.median(data.reshape((1504,2,1504,2)),axis=-1), axis=1)#.mean(-1).mean(1)
-    """
-    for j in range(bin):
-        for i in range(bin):
-            y = j*new_height
-            x = i*new_width
-            pixel = data[y:y+new_height, x:x+new_width]
-            newImage[j,i] = np.nanmedian(pixel).astype(np.float32)
-    """
+
     return hdu.astype(np.float32) #newImage.astype(np.float32) #
-"""
-data = fits.open('/volumes/ssd/NGC5907/1/sky_subed_r/pp0NGC59070000_r.fits')[0].data 
-arr = binning(data)
-print(arr.shape)
-sys.exit()
-"""
+
 import ray
 file = sorted(glob.glob('/volumes/ssd/BSH_data/250820/0/*.fit'))
 @ray.remote
 def bin(file, i):
     n = format(i, '04')
     hdu = fits.open(file[i])[0].data 
+    hdr = fits.open(file[i])[0].header
     b_hdu = binning(hdu)
-    fits.writeto('/volumes/ssd/BSH_data/250820/0/bin2_light'+str(n)+'.fits', b_hdu, overwrite=True)
+    fits.writeto('/volumes/ssd/BSH_data/250820/0/bin2_light'+str(n)+'.fits', b_hdu, header=hdr,overwrite=True)
 
 def process(path, obj_name):
     start_time = time.time()
@@ -218,6 +177,7 @@ def process(path, obj_name):
     color_list = ['r','g', 'b'] 
     for i in color_list:
         Master.masking(path, i)
+        #Master.dome_flat(path, i)
         Master.dark_sky_flat(path, i)
         flat_corr(path, obj_name, i)
         sky_sub(path, obj_name, i)
@@ -225,7 +185,7 @@ def process(path, obj_name):
     print(f'{end_time - start_time} seconds') 
 
 
-#process('/volumes/ssd/2025-09-15', 'M27')
-astrometry('/volumes/ssd/2025-09-15', 'M27',"19:59:36.4",'+22:43:16.4', '1.5')
+#process('/volumes/ssd/2026-02-03', 'M44')
+#astrometry('/volumes/ssd/2026-02-03', 'M44',"08:39:58.4",'+19:36:33', '2.5')
 #ray.get([bin.remote(file, i) for i in range(len(file))]); ray.shutdown()
 

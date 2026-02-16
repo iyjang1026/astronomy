@@ -9,40 +9,16 @@ from photutils.aperture import EllipticalAperture
 from scipy.ndimage import binary_dilation
 from skimage.morphology import disk
 import sys
-"""
-import sep
-def se_mask(arr):
-        data = np.array(arr)
-        data1 = data.astype(data.dtype.newbyteorder('='))
-        bkg = sep.Background(data1)
-        subd = data - bkg
-        obj, seg_map = sep.extract(subd, 1.5*bkg.globalrms, segmentation_map=True)
-        mask_map = np.array(seg_map)
-        kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
-        mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
-        masked = np.where((mask_map_d!=0), np.nan, data)
-        return masked.astype(np.float32)
 
-def masking(arr):
-    bkg_estimator = MedianBackground()
-    bkg = Background2D(arr, (64,64), filter_size=(3,3), bkg_estimator=bkg_estimator)
-    data = arr - bkg.background
-    threshold = 3 * bkg.background_rms
-    kernel = make_2dgaussian_kernel(3.0, size=5)
-    convolved_data = convolve(data, kernel)
-    seg_map = detect_sources(convolved_data, threshold, npixels=10)
-    mask_map = np.array(seg_map)
-    kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
-    mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
-    masked = np.where((mask_map_d!=0), np.nan, arr)
-    return masked.astype(np.float32)
 """
-def region_mask(hdu, thrsh, eps_thr):
-    half = disk(100)
-    """
-    z_arr = np.zeros_like(hdu)
-    z_arr[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
-    """
+for coadd image masking
+"""
+
+def region_mask(hdu, thrsh):
+    #mask = np.where(hdu!=0, False, True)
+    #half = disk(100)
+    #z_arr = np.zeros_like(hdu)
+    #z_arr[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
     bkg_est = MedianBackground()
     bkg = Background2D(hdu, (64,64), filter_size=(5,5), bkg_estimator=bkg_est)#, mask=z_arr)
     data = hdu - bkg.background
@@ -76,7 +52,7 @@ def region_mask(hdu, thrsh, eps_thr):
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-20:]
+    tmp_num = tmp[-25:]
     top_idx = [a_list.index(x) for x in tmp_num]
     for i in top_idx:
         """
@@ -129,28 +105,26 @@ def region_mask(hdu, thrsh, eps_thr):
         arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     
     kernel0 = disk(3) 
-    seg_d= binary_dilation(seg, kernel0, iterations=1)
+    seg_d= binary_dilation(seg, kernel0, iterations=2)
     masked_map = np.where(seg_d!=0, 1, 0) + arr_zero
-    half = disk(100)
+    #half = disk(100)
     #masked_map[2048-100:2048,1212-100-1:1212+100] += half[0:100,:]
     masked = np.where(masked_map!=0, 1, 0).astype(np.int8)
     
     return np.array(masked, dtype=np.int8)
-
 """
-hdu = fits.open('/volumes/ssd/2026-02-02/m105/pp_obj/ppm105_0000.fits')[0].data
-x,y = hdu.shape
-mask = region_mask(hdu,1.5, 0.8)
+hdu = fits.open('/volumes/ssd/2026-02-03/r/M440000_r.fits')[0].data
+#x,y = hdu.shape
+mask = region_mask(hdu,1.5)
+#plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
-#fits.writeto('~/data/mask_NGC1064_r.fits', mask, overwrite=True)
+#fits.writeto('/volumes/ssd/intern/25_summer/M51_L/mask_coadd.fits', mask, overwrite=True)
 #map1 = np.where(map==0,np.nan, map)
-median = np.median(hdu)
-std = np.std(hdu)
-plt.imshow(map,origin='lower')#vmax=median+3*std, vmin=median-3*std, origin='lower')
+mean, median, std = sigma_clipped_stats(map, cenfunc='median', stdfunc='mad_std', sigma=3)
 #plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,
-#plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
+plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
 #plt.imshow(map[int(x/2-1300):int(x/2+1300),int(y/2-1300):int(y/2+1300)],vmax=median+3*std, vmin=median-3*std,
- #           origin='lower')
-plt.colorbar()
+            #origin='lower')
+#plt.colorbar()
 plt.show()
 """

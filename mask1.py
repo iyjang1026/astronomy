@@ -26,15 +26,15 @@ def masking(arr):
     bkg_estimator = MedianBackground()
     bkg = Background2D(arr, (64,64), filter_size=(3,3), bkg_estimator=bkg_estimator)
     data = arr - bkg.background
-    threshold = 3 * bkg.background_rms
+    threshold = 1.5 * bkg.background_rms
     kernel = make_2dgaussian_kernel(3.0, size=5)
     convolved_data = convolve(data, kernel)
-    seg_map = detect_sources(convolved_data, threshold, npixels=10)
+    seg_map = detect_sources(convolved_data, threshold, npixels=5)
     mask_map = np.array(seg_map)
-    kernel = np.array([[1,1,1],[1,1,1],[1,1,1]]) #skimage.morphology.disk(3)
-    mask_map_d = binary_dilation(mask_map, kernel, iterations=2)
-    masked = np.where((mask_map_d!=0), np.nan, arr)
-    return masked.astype(np.float32)
+    kernel = disk(1)
+    mask_map_d = binary_dilation(mask_map, kernel, iterations=1)
+    masked = np.where((mask_map_d!=0), 1, 0)
+    return mask_map_d.astype(np.int8)
 
 """
 for coadd image masking
@@ -152,3 +152,5 @@ plt.imshow(map,vmax=median+3*std, vmin=median-3*std ,origin='lower')
 #plt.colorbar()
 plt.show()
 """
+
+

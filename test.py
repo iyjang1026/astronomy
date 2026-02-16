@@ -220,7 +220,17 @@ def model_subed(path):
     mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
     plt.imshow(hdu-model,vmax=median+3*std, vmin=median-3*std, origin='lower')
     plt.show()
-coadd_plot('/volumes/ssd/intern/25_summer/NGC5907_r', 'NGC 5907')
+
+def bkg_mag(path, obj):
+    hdu = fits.open(path+'/'+obj+'_r.fits')[0].data 
+    mask = fits.open(path+'/mask_'+obj+'_r.fits')[0].data 
+    img = np.where(mask!=0, np.nan, hdu)
+    median = np.nanmedian(img)
+    std = np.nanstd(img)
+    err = abs(median/std*np.log(10))
+    #bkg_mag = -2.5*np.log10(median/(0.262**2)) + 22.59
+    print(err)
+#coadd_plot('/volumes/ssd/intern/25_summer/NGC5907_r', 'NGC 5907')
 #hist('/volumes/ssd/intern/25_summer/NGC5907_r')
 #image_plot('/volumes/ssd/intern/25_summer/M101_L/')
 #residual('/volumes/ssd/intern/25_summer/NGC6946_L/process')
@@ -231,12 +241,17 @@ coadd_plot('/volumes/ssd/intern/25_summer/NGC5907_r', 'NGC 5907')
 #fig()
 import warnings
 warnings.filterwarnings('ignore')
-
+bkg_mag('~/data/ic3280','IC3280')
 #hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/pp_masked_nrm.fits')[0].data 
 #std(hdu)
 """
-hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data 
+hdu = fits.open('~/data/ngc12/NGC12_r.fits')[0].data 
+mask = fits.open('~/data/ngc12/obj_rejec_NGC12_r.fits')[0].data 
+img = np.where(mask!=0, np.nan, hdu)
 mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
-plt.imshow(hdu, vmax=median+3*std, vmin=median-3*std, origin='lower', cmap='grey')
+plt.imshow(img, vmax=median+3*std, vmin=median-3*std, origin='lower')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Object Rejected Mask')
 plt.show()
 """

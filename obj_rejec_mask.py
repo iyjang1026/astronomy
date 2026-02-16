@@ -26,59 +26,50 @@ def region_mask(hdu, thrsh):
     segm_d = np.array(segm_deblend).astype(np.int32)
     x1,y1 = hdu.shape
     x, y = int(x1/2), int(y1/2)
-    arr = segm_d[x+20:x+200, y-100:y+250] #[1050:2000,1200:2000] #중앙부 크롭
+    arr = segm_d[1380:1650,1380:1650]#[2400:3200,3200:4000] #[1050:2000,1200:2000] #중앙부 크롭
     seg_img = SegmentationImage(arr)
     
     #plt.imshow(seg_img, origin='lower'); plt.show(); sys.exit()
     
-    labels = [x for x in seg_img.labels if x>=4600] #M 101에 해당하는 값을 가진 label의 리스트
+    labels = [x for x in seg_img.labels if x>=1208] #M 101에 해당하는 값을 가진 label의 리스트
     seg_img.remove_labels(labels) #M 101의 segmentation 제거
     segm_d_crop = np.array(seg_img)
-    segm_d[x+20:x+200, y-100:y+250] = segm_d_crop #합성 #[1050:2000,1200:2000] #[x-400:x+200, y-300:y+400]
+    segm_d[1380:1650,1380:1650] = segm_d_crop #합성 #[1050:2000,1200:2000] #[x-400:x+200, y-300:y+400]
 
     segm = SegmentationImage(segm_d)
     cat = SourceCatalog(segm, segm, convolved_data=conv_hdu)
+     
+    a_list = list(cat.semimajor_sigma.value)
     
-    ap = cat.kron_aperture #각 천제에 맞는 타원 생성
-    l = [x for x in ap if x!=None]
-    a_list = []
-    for i in l:
-        a = None
-        b = None
-        eps = None
-        a = i.a
-        b = i.b
-        eps = np.sqrt(1-(b/a)**2)
-        """
-        if eps > 0.99:
-            a_list.append(0)
-        else:
-            a_list.append(a)
-        """
-        a_list.append(a)
     arr_zero = np.zeros_like(hdu).astype(np.float32) 
     tmp = a_list.copy()
     tmp.sort()
-    tmp_num = tmp[-30:-1] #타원의 단반경 상위 20개 추출
+    tmp_num = tmp[-20:]
     top_idx = [a_list.index(x) for x in tmp_num]
-    
     for i in top_idx:
-        g_aper = ap[i]
+        """
+        g_aper = l[i]
         a = g_aper.a
         b = g_aper.b
         xypos = g_aper.positions
         theta = g_aper.theta
         xy = (int(xypos[0]), int(xypos[1]))
-        aperture = EllipticalAperture(xy, 1.0*a, 1.0*b, theta=theta) #장반경과 단반경의 3.5배로 마스크 크기 설정
+        """
+        cat0 = cat[i]
+        xy = (cat0.xcentroid, cat0.ycentroid)
+        theta = cat0.orientation.value *np.pi /180
+        a,b = 3*cat0.semimajor_sigma.value, 3*cat0.semiminor_sigma.value
+        aperture = EllipticalAperture(xy, 3*a, 3*b, theta)
+        #aperture = #EllipticalAperture(xy, 3.5*a, 3.5*b, theta=theta)
         mask = np.array(aperture.to_mask(method='center')).astype(np.int8)
         mask_x, mask_y = mask.shape
     
-        st_x = np.int16(xy[1] - mask_x/2) #마스크의 시작점
+        st_x = np.int16(xy[1] - mask_x/2)
         st_y = np.int16(xy[0] - mask_y/2)
     
         x, y = hdu.shape
    
-        def lim(st, mask_s, arr_s): #마스크를 자르는 조건문
+        def lim(st, mask_s, arr_s):
             if st < 0 and st+mask_s<arr_s:
                 arr_st = 0
                 mask_st = -st
@@ -101,10 +92,9 @@ def region_mask(hdu, thrsh):
         
         arr_x, mask_s_x, mask_l_x = lim(st_x, mask_x, x)
         arr_y, mask_s_y, mask_l_y = lim(st_y, mask_y, y)
-        mask = mask[mask_s_x:mask_l_x,mask_s_y:mask_l_y] #마스크를 크롭
-        m_x, m_y = mask.shape 
-        arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask #빈 영상에 마스크들을 추가
-    
+        mask = mask[mask_s_x:mask_l_x,mask_s_y:mask_l_y] 
+        m_x, m_y = mask.shape #crop mask
+        arr_zero[arr_x:arr_x+m_x, arr_y:arr_y+m_y] += mask
     #kernel0 = disk(3) 
     #seg_d = binary_dilation(segm_d, kernel0, iterations=1) #ngrow
     masked_map = np.where(segm_d!=0, 1, 0) + arr_zero #region 마스크 영상과 segmentation 마스크 영상을 합침
@@ -117,13 +107,13 @@ def region_mask(hdu, thrsh):
 import warnings
 
 warnings.filterwarnings('ignore')
-hdu = fits.open('/volumes/ssd/intern/25_summer/M51_L/sky_subed/coadd.fits')[0].data
+hdu = fits.open('/volumes/ssd/intern/25_summer/NGC4236_r/sky_subed/coadd.fits')[0].data
 #mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits')[0].data
 #x,y = hdu.shape
-mask = region_mask(hdu,1.5)
+mask = region_mask(hdu,3.0)
 #plt.imshow(mask, origin='lower')
 map = np.where(mask!=0, np.nan, hdu)
-#fits.writeto('/volumes/ssd/intern/25_summer/NGC6946_L/obj_rejec_coadd.fits', mask, overwrite=True)
+#fits.writeto('~/data/obj_rejec_IC3280_r.fits', mask, overwrite=True)
 #map1 = np.where(map==0,np.nan, map)
 #plt.imshow(mask, origin='lower')
 #plt.imshow(hdu, origin='lower') #vmax=median+3*std, vmin=median-3*std,

@@ -97,46 +97,5 @@ def astrometry(path, obj_name, ra, dec, radius):
 
 warnings.filterwarnings('ignore')
 
-def model_plot(path):
-     hdu = fits.open(path)[0].data 
-     mask = region_mask(hdu, 1.5)
-     masked = np.where(mask!=0, np.nan, hdu)
-     sky = sky_model(masked, 32,2)
-     plt.imshow(sky, cmap='grey', origin='lower')
-     plt.colorbar()
-     plt.xlabel('x')
-     plt.ylabel('y')
-     plt.title('Bkg Model')
-     plt.show()
-
-
-def mask_plot(path):
-     hdu = fits.open(path)[0].data
-     mask = region_mask(hdu, 1.5)
-     masked = np.where(mask!=0,np.nan, hdu)
-     median = np.nanmedian(masked)
-     std = np.nanstd(masked)
-     plt.imshow(masked, vmax=median+3*std, vmin=median-3*std, origin='lower')
-     plt.colorbar()
-     plt.title('Masked Image')
-     plt.xlabel('x')
-     plt.ylabel('y')
-     plt.show()
-
-def save_mask(path):
-     hdu = fits.open(path)[0].data
-     mask = region_mask(hdu,1.5)
-     masked = np.where(mask!=0, np.nan, hdu)
-     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/pp_masked_nrm.fits', masked, overwrite=True)
-
-def save_model(path):
-     masked = se_mask(path)
-     sky = sky_model(masked, 64)
-     fits.writeto('/volumes/ssd/intern/25_summer/M101_L/bkg.fits', sky, overwrite=True)
-
 #sky_sub('/volumes/ssd/NGC5907/1', 'NGC5907', 'b')
-astrometry('/volumes/ssd/2025-07-22','M13','16:41:41.6','+36:27:47.8','1.5')
-#save_mask('/volumes/ssd/intern/25_summer/M101_L/sky_subed/ppM1010000.fits')
-#save_model('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
-#model_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0000.fits')
-#mask_plot('/volumes/ssd/intern/25_summer/M101_L/pp/ppM101_0024.fits')
+#astrometry('/volumes/ssd/2025-07-22','M13','16:41:41.6','+36:27:47.8','1.5')

@@ -41,15 +41,15 @@ def bkg_std(hdu, mask, size):
     #plt.imshow(arr1, origin='lower'); plt.show(); sys.exit()
     x,y = arr.shape
     center_x, center_y = int(x/2), int(y/2)
+    
     #bin_arr = arr[center_x-1250:center_x+1250, center_y-1250:center_y+1250]
     for i in range(1000):
-        rand_st_x, rand_st_y = np.random.randint(center_x-1500,center_x+1500-size, 2)
-        bin_x, bin_y = rand_st_x+size, rand_st_y+size
+        rand_st_x, rand_st_y = np.random.randint(center_x-1500, center_x+1500-size, 2)
         bin_arr = arr[rand_st_x:rand_st_x+size, rand_st_y:rand_st_y+size]
-        mean, median, std = sigma_clipped_stats(bin_arr, cenfunc='median', stdfunc='mad_std', sigma=3)
-        #std = np.ma.std(bin_arr)
-        median_list.append(median)
-        std_list.append(std)
+        mean, median1, std1 = sigma_clipped_stats(bin_arr, cenfunc='median', stdfunc='mad_std', sigma=3)
+        #print(median1, std1);sys.exit()
+        median_list.append(median1)
+        std_list.append(std1)
     mean, std_median, std = sigma_clipped_stats(np.array(std_list).astype(np.float32),
                                             cenfunc='median', stdfunc='mad_std', sigma=3.)
     
@@ -61,9 +61,14 @@ def hist(hdu, mask):
     print(std)
     hist, bin = np.histogram(data, bins=256)
     plt.hist(hist, bin, label='image_hist')
-std_hdu = fits.open('/volumes/ssd/intern/25_summer/M101_L/sky_subed/coadd.fits')[0].data 
-std_mask = fits.open('/volumes/ssd/intern/25_summer/M101_L/mask_coadd.fits')[0].data 
+
+std_hdu = fits.open('/volumes/ssd/intern/25_summer/NGC4236_r/sky_subed/coadd.fits')[0].data
+std_mask = fits.open('/volumes/ssd/intern/25_summer/NGc4236_r/mask_coadd.fits')[0].data
 std_noise, median_arr = bkg_std(std_hdu, std_mask, 128)
+
+#mean, median, std = sigma_clipped_stats(std_hdu, cenfunc='median', stdfunc='mad_std',mask=std_mask, sigma=3.)
+#print(median, std); sys.exit()
+
 
 def median_std(hdu, mask, iter):
     median_list = []
@@ -73,22 +78,22 @@ def median_std(hdu, mask, iter):
     mean, median, median_std = sigma_clipped_stats(np.array(median_list), cenfunc='median', stdfunc='mad_std', sigma=3.)
 
     print(f'std is {median_std, median}')
-#median_std(std_hdu, std_mask,50)
+#median_std(std_hdu, std_mask,1)
 #hist(std_hdu, std_mask)
-#plt.hist(median_arr, bins=256, label='median_hist'); plt.show()
+#plt.hist(median_arr, bins=256, label='median_hist'); plt.show();sys.exit()
 
 def sb_limit():
     #read catalogue
-    source = '/volumes/ssd/2025-09-15/l/coadd.cat'#
+    source = '/volumes/ssd/intern/25_summer/NGC4236_r/sky_subed/coadd.cat'#
     data = Table.read(source, format='ascii', converters={'obsid':str})
     #check the catalogue location
-    sdss = Table.read('~/M27_GSC.csv', format='ascii') #check!! 
+    sdss = Table.read('~/catalogue/sdss_ngc4236.csv', format='ascii') #check!! 
 
     #extract coordinate
-    sdsscat = sdss['RA_ICRS', 'DE_ICRS', 'gmag','rmag']
+    sdsscat = sdss['ra', 'dec', 'g','r']
     objcat = data['ALPHAPEAK_J2000','DELTAPEAK_J2000','FLUX_BEST', 'ERRAWIN_IMAGE', 'ERRBWIN_IMAGE']
     #obj_cat = objcat[(objcat['ERRAWIN_IMAGE']<0.01)&(objcat['ERRBWIN_IMAGE']<0.01)]
-    sdss_coord = SkyCoord(ra=sdsscat['RA_ICRS']*u.degree, dec=sdsscat['DE_ICRS']*u.degree, frame='fk5')
+    sdss_coord = SkyCoord(ra=sdsscat['ra']*u.degree, dec=sdsscat['dec']*u.degree, frame='fk5')
     obj_coord = SkyCoord(ra=objcat['ALPHAPEAK_J2000'], dec=objcat['DELTAPEAK_J2000'], frame='fk5')
 
 
@@ -98,7 +103,7 @@ def sb_limit():
 
 
     obj_flux = obj['FLUX_BEST']
-    sdss_mag = sdss_data['rmag']
+    sdss_mag = sdss_data['g']
     count = np.array(obj_flux)
     mag = np.array(sdss_mag)
 
@@ -136,7 +141,7 @@ def sb_limit():
     plt.ylabel('$Mag_{SDSS,r}$')
     sb_lim = popt[1] - 2.5*np.log10(std_noise/(1.89*10))
     plt.text(10**3.5, 10, f'$Z_p$ = {popt[1]:.2f}\nSB Limit = {sb_lim:.2f}', bbox={'boxstyle':'square', 'fc':'white'})
-    plt.title('M27')
+    plt.title('')
 
     plt.show()
 

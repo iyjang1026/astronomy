@@ -7,13 +7,15 @@ from astropy.stats import sigma_clipped_stats
 from astropy.wcs import WCS
 import sys
 
-path = '/volumes/ssd/intern/25_summer/M51_L'
-
+path = '/volumes/ssd/intern/25_summer/NGC4236_r'
+color = 'r'
+title = 'NGC12'
 hdl = fits.open(path+'/sky_subed/coadd.fits')
+model = fits.open(path+'/model_'+color+'.fits')[0].data
 hdu = hdl[0].data
 hdr = hdl[0].header
 wcs = WCS(hdr)
-tbl = Table.read(path+'/tbl_median_test_1/tbl_-0.0.csv', format='ascii.csv')
+tbl = Table.read(path+'/test_color_iso_tbl_'+color+'.csv', format='ascii.csv')
 mean, median, std = sigma_clipped_stats(hdu, cenfunc='median', stdfunc='mad_std', sigma=3)
 
 sma = tbl['sma'][1:]
@@ -23,17 +25,41 @@ pa = tbl['pa'][1:]
 #print(pa*np.pi/180)
 
 #sys.exit()
-median = np.median(hdu)
-std = np.std(hdu)
-fig, ax = plt.subplots(figsize=(6,5), subplot_kw=dict(projection=wcs))
-ax.imshow(hdu,vmax=median+3*std, vmin=median-3*std,origin='lower')# median-9*std 
-for i in range(len(sma)):
+median = np.median(hdu)#[1500-30:1500+300,1500-300:1500+300])
+std = np.std(hdu)#[1500-300:1500+300,1500-300:1500+300])
+fig, ax = plt.subplots(1,3, figsize=(15,5), subplot_kw=dict(projection=wcs), sharex=True, sharey=True) #plt.subplots(subplot_kw=dict(projection=wcs))#
+fig.subplots_adjust(wspace=0.3)
+ax[0].imshow(hdu,vmax=median+3*std, vmin=median-3*std,origin='lower')# median-9*std ,[1500-350:1500+350,1500-350:1500+350],
+ax[1].imshow(model,vmax=median+3*std, vmin=median-3*std,origin='lower')
+ax[2].imshow(hdu-model,vmax=median+3*std, vmin=median-3*std,origin='lower')# median-9*std
+
+for i in range(len(sma)-8):
     if i%1 == 0:
         n = i
         aper = EllipticalAperture(positions=(x0[n],y0[n]), a=sma[n], b=sma[n]*(1-eps[n]), theta=pa[n]*np.pi/180)
         aper.plot(color='white', linewidth=0.7)
 
-ax.set_xlabel('R.A.')
-ax.set_ylabel('DEC')
-ax.set_title('NGC 5195')
+#ax[0].set_xlabel('R.A.')
+ax[0].coords[0].set_auto_axislabel(False)
+ax[0].coords[1].set_auto_axislabel(False)
+#ax[0].set_ylabel('DEC')
+ax[0].set_title('Raw Image')
+ax[1].coords[0].set_auto_axislabel(False)
+#ax[1].set_xlabel('R.A.')
+ax[1].coords[1].set_auto_axislabel(False)
+#ax[1].set_ylabel('DEC')
+ax[1].set_title('Model')
+#ax[2].set_xlabel('R.A.')
+ax[2].coords[0].set_auto_axislabel(False)
+ax[2].coords[1].set_auto_axislabel(False)
+#ax[2].set_ylabel('DEC')
+ax[2].set_title('Model-Image')
+"""
+ax.coords[0].set_auto_axislabel(False)
+ax.coords[1].set_auto_axislabel(False)
+"""
+fig.suptitle(title)
+fig.supylabel('DEC')
+fig.supxlabel('R.A.')
+
 plt.show()

@@ -25,9 +25,12 @@ def satelite(path):
     conv_hdu = convolve(data, kernel)
     seg = detect_sources(conv_hdu, thr, npixels=5)
     cat = SourceCatalog(data, seg, convolved_data=conv_hdu)
-    cat_idx = np.where(cat.ellipticity>0.9)[0]
+    #print(np.std(cat.semimajor_sigma));sys.exit()
+    mean, median, std = sigma_clipped_stats(cat.semimajor_sigma.value, cenfunc='median', stdfunc='mad_std')
+    cat_idx = np.where((cat.semimajor_sigma.value>median+9*std)&(cat.ellipticity>0.9))[0]
+    #print(cat_idx);sys.exit()
     #print(len(cat_idx));sys.exit()
-    sma_l = list(cat.semimajor_sigma.value.astype(np.float32))
+    #sma_l = list(cat.semimajor_sigma.value.astype(np.float32))
     """
     tmp = sma_l.copy()
     tmp.sort()
@@ -61,11 +64,13 @@ def satelite(path):
         i.plot(color='C3')
     """
     #plt.show()
+    return path, len(apers)
+    """
     if len(apers)!=0:
         return path, len(apers)
     else:
         return None
-    
+    """
     
     
 import cv2
@@ -82,8 +87,8 @@ if __name__=="__main__":
     
     import warnings
     warnings.filterwarnings('ignore')
-    file_txt = open('/volumes/ssd/BSH_data/250820/sate_0.txt', 'a')
-    file = sorted(glob.glob('/volumes/ssd/BSH_data/250820/0/bin2*.fits'))
+    file_txt = open('/volumes/2023USB128G/sate_3.txt', 'a')
+    file = sorted(glob.glob('/volumes/2023USB128G/250604/*.fit'))
     for i in range(len(file)):
         d_type = satelite(file[i])
         

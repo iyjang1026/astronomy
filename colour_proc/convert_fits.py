@@ -82,7 +82,7 @@ class convert_fits:
         g_path = path + '/g/'
         b_path = path + '/b/'
 
-        path = convert_fits(path + '/color').path #
+        path = convert_fits(path+ '/color').path #
 
         for i in range(len(path)):
             data = fits.open(path[i])[0]
@@ -100,5 +100,5 @@ class convert_fits:
             hdr.update({'COLOR':'b'})
             fits.writeto(b_path+obj_name+str(n)+'b.fits', b.astype(np.float32), header=hdr, overwrite=True)
 
-#convert_fits.debayer_RGGB_multi('/volumes/ssd/2025-06-29')
-#convert_fits.split_rgb_multi('/volumes/ssd/2025-06-29/color_flat', 'flat')
+#convert_fits.debayer_RGGB_multi('/volumes/ssd/2025-11-20/flats')
+#convert_fits.split_rgb_multi('/volumes/ssd/2025-11-20/flats', 'flat')
